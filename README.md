@@ -1,75 +1,83 @@
-# Nuxt Minimal Starter
+# DocuPrism 🔮
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A privacy-first, offline-capable PWA for on-device document analysis using the Chrome Built-in AI API.
 
-## Setup
+*Project submitted for the Google Chrome Built-in AI Challenge 2025.*
 
-Make sure to install dependencies:
+---
 
-```bash
-# npm
-npm install
+![DocuPrism Demo GIF](https://[ENLACE-A-TU-GIF-DE-DEMO].gif)
 
-# pnpm
-pnpm install
+## 🎯 The Problem
 
-# yarn
-yarn install
+In the age of AI, powerful language models have become essential for productivity. However, they come with significant drawbacks:
+* **Connectivity Dependence:** They are useless without a stable internet connection.
+* **Privacy Risks:** Users must upload potentially sensitive or proprietary documents to third-party servers.
+* **Cost:** API calls and server infrastructure can be expensive for developers and, ultimately, for users.
 
-# bun
-bun install
-```
+## ✨ The Solution: DocuPrism
 
-## Development Server
+**DocuPrism** solves these problems by leveraging Google Chrome's new built-in, on-device AI. It's a Progressive Web App (PWA) that brings powerful document analysis capabilities directly into your browser, ensuring your data never leaves your machine.
 
-Start the development server on `http://localhost:3000`:
+It's fast, secure, and works anytime, anywhere—even on a plane.
 
-```bash
-# npm
-npm run dev
+## 🚀 Key Features
 
-# pnpm
-pnpm dev
+* **✨ On-Device Summarization:** Instantly get the gist of long texts using the built-in `Summarizer API`.
+* **🔒 Privacy by Design:** All processing happens locally. Your documents are never uploaded, ensuring 100% confidentiality.
+* **✈️ Offline-First:** As a PWA, DocuPrism is fully functional without an internet connection.
+* **📦 Installable:** Install it on your desktop or mobile device for a native-app-like experience.
+* **💬 Chat with your Document (Coming Soon):** The groundwork is laid to use the `Prompt API` to ask questions directly about the document's content.
 
-# yarn
-yarn dev
+## 🛠️ Tech Stack
 
-# bun
-bun run dev
-```
+* **Framework:** [Nuxt 3](https://nuxt.com/) (Vue 3)
+* **Language:** [TypeScript](https://www.typescriptlang.org/)
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+* **PWA / Offline Capability:** [@vite-pwa/nuxt](https://vite-pwa-org.netlify.app/)
+* **Core AI Engine:** Google Chrome's Built-in AI APIs (`window.ai`)
 
-## Production
+## 🔗 Links
 
-Build the application for production:
+* **Live Demo:** **https://docuprism.app**
+* **Video Walkthrough:** **https://[ENLACE-AL-VIDEO].com**
 
-```bash
-# npm
-npm run build
+## ⚙️ Getting Started (Running Locally)
 
-# pnpm
-pnpm build
+To run this project on your local machine, please follow these steps:
 
-# yarn
-yarn build
+**Prerequisites:**
+* Node.js (LTS version)
+* `pnpm` package manager
+* A compatible version of Google Chrome that supports the Built-in AI APIs.
 
-# bun
-bun run build
-```
+**Installation & Setup:**
 
-Locally preview production build:
+1.  Clone the repository:
+    ```bash
+    git clone [https://github.com/](https://github.com/)[TU-USUARIO-DE-GITHUB]/DocuPrism.git
+    ```
 
-```bash
-# npm
-npm run preview
+2.  Navigate to the project directory:
+    ```bash
+    cd DocuPrism
+    ```
 
-# pnpm
-pnpm preview
+3.  Install the dependencies:
+    ```bash
+    pnpm install
+    ```
 
-# yarn
-yarn preview
+4.  Run the development server:
+    ```bash
+    pnpm run dev
+    ```
 
-# bun
-bun run preview
-```
+5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+*Made with ❤️ for the Google Chrome Dev Community.*
