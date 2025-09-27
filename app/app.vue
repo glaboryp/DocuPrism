@@ -18,18 +18,21 @@
           
           <!-- Status Badge -->
           <div class="flex items-center space-x-2">
-            <div v-if="!isSupported && !isCheckingSupport" 
-                 class="flex items-center space-x-2 px-3 py-1 bg-red-900/30 border border-red-700 rounded-full">
+            <div
+              v-if="!isSupported && !isCheckingSupport" 
+              class="flex items-center space-x-2 px-3 py-1 bg-red-900/30 border border-red-700 rounded-full">
               <Icon name="heroicons:exclamation-triangle" class="w-4 h-4 text-red-400" />
               <span class="text-sm text-red-400">AI Not Supported</span>
             </div>
-            <div v-else-if="isSupported" 
+            <div
+              v-else-if="isSupported" 
                  class="flex items-center space-x-2 px-3 py-1 bg-green-900/30 border border-green-700 rounded-full">
               <Icon name="heroicons:check-circle" class="w-4 h-4 text-green-400" />
               <span class="text-sm text-green-400">AI Ready</span>
             </div>
-            <div v-else 
-                 class="flex items-center space-x-2 px-3 py-1 bg-yellow-900/30 border border-yellow-700 rounded-full">
+            <div
+              v-else 
+              class="flex items-center space-x-2 px-3 py-1 bg-yellow-900/30 border border-yellow-700 rounded-full">
               <Icon name="heroicons:clock" class="w-4 h-4 text-yellow-400" />
               <span class="text-sm text-yellow-400">Checking...</span>
             </div>
@@ -103,7 +106,7 @@
                       type="radio" 
                       value="plain-text"
                       class="text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-500"
-                    />
+                    >
                     <span class="ml-2 text-gray-300">Plain Text</span>
                   </label>
                   <label class="flex items-center">
@@ -112,7 +115,7 @@
                       type="radio" 
                       value="markdown"
                       class="text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-500"
-                    />
+                    >
                     <span class="ml-2 text-gray-300">Markdown</span>
                   </label>
                 </div>
@@ -122,9 +125,9 @@
             <!-- Action Buttons -->
             <div class="mt-6 flex space-x-4">
               <button
-                @click="handleSummarize"
                 :disabled="!canSummarize"
                 class="btn-primary flex-1 flex items-center justify-center"
+                @click="handleSummarize"
               >
                 <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 mr-2 animate-spin" />
                 <Icon v-else name="heroicons:sparkles" class="w-4 h-4 mr-2" />
@@ -132,9 +135,9 @@
               </button>
               
               <button
-                @click="clearAll"
                 :disabled="isLoading"
                 class="btn-secondary"
+                @click="clearAll"
               >
                 <Icon name="heroicons:trash" class="w-4 h-4 mr-2" />
                 Clear
@@ -182,8 +185,8 @@
               <div class="flex justify-between items-center text-sm text-gray-400 pt-4 border-t border-gray-700">
                 <span>{{ summary.length.toLocaleString() }} characters</span>
                 <button
-                  @click="copyToClipboard"
                   class="text-indigo-400 hover:text-indigo-300 flex items-center"
+                  @click="copyToClipboard"
                 >
                   <Icon name="heroicons:clipboard-document" class="w-4 h-4 mr-1" />
                   Copy
@@ -226,6 +229,8 @@
 </template>
 
 <script setup lang="ts">
+import '../assets/css/main.css'
+
 // Meta and head configuration
 useHead({
   title: 'DocuPrism - On-Device Document Analysis',
@@ -234,17 +239,32 @@ useHead({
   ]
 })
 
+// Types
+interface SummaryOptions {
+  type: string
+  format: string
+  length: string
+}
+
+interface AISummarizerCapabilities {
+  available: 'readily' | 'after-download' | 'no'
+  defaultTopK?: number
+  maxTopK?: number
+  defaultTemperature?: number
+  maxOutputTokens?: number
+}
+
 // Reactive state
-const inputText = ref('')
-const summary = ref('')
-const isCheckingSupport = ref(true)
-const capabilities = ref(null)
-const isSupported = ref(false)
-const isLoading = ref(false)
-const error = ref('')
+const inputText = ref<string>('')
+const summary = ref<string>('')
+const isCheckingSupport = ref<boolean>(true)
+const capabilities = ref<AISummarizerCapabilities | null>(null)
+const isSupported = ref<boolean>(false)
+const isLoading = ref<boolean>(false)
+const error = ref<string>('')
 
 // Summary options
-const summaryOptions = ref({
+const summaryOptions = ref<SummaryOptions>({
   type: 'tl;dr',
   format: 'plain-text',
   length: 'medium'
@@ -267,7 +287,7 @@ const formattedSummary = computed(() => {
 })
 
 // Chrome AI Methods
-const checkAISupport = async () => {
+const checkAISupport = async (): Promise<boolean> => {
   try {
     // @ts-ignore - Chrome AI types not available
     if (typeof window === 'undefined' || !window.ai?.summarizer) {
@@ -276,7 +296,7 @@ const checkAISupport = async () => {
     }
 
     // @ts-ignore - Chrome AI types not available
-    const caps = await window.ai.summarizer.capabilities()
+    const caps: AISummarizerCapabilities = await window.ai.summarizer.capabilities()
     
     if (caps.available === 'no') {
       error.value = 'Summarizer API is not available'
@@ -298,7 +318,8 @@ const checkAISupport = async () => {
   }
 }
 
-const summarizeText = async (text, options) => {
+// AI Methods
+const summarizeText = async (text: string, options: SummaryOptions): Promise<string> => {
   try {
     // @ts-ignore - Chrome AI types not available
     if (!window.ai?.summarizer) {

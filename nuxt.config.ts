@@ -41,8 +41,18 @@ export default defineNuxtConfig({
     typeCheck: true
   },
 
-  // CSS configuration
-  css: ['~/assets/css/main.css'],
+  // Vite configuration with aliases
+  vite: {
+    resolve: {
+      alias: {
+        '@assets': './assets',
+        '@styles': './assets/css'
+      }
+    }
+  },
+
+  // CSS configuration - Will be handled directly in app.vue
+  // css: ['@styles/main.css'],
 
   // App configuration
   app: {
