@@ -57,8 +57,8 @@
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <p>Go to <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://flags</code> and enable:</p>
                   <ul class="list-disc list-inside mt-1 space-y-1">
-                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">#optimization-guide-on-device-model</code></li>
-                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">#prompt-api-for-gemini-nano</code></li>
+                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">summarization-api-for-gemini-nano</code></li>
+                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">prompt-api-for-gemini-nano</code></li>
                   </ul>
                 </div>
               </div>
