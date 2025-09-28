@@ -1,125 +1,136 @@
 import { ref, readonly, onMounted } from 'vue'
 
-// Types for Chrome Built-in AI
-interface AISummarizerCapabilities {
-  available: 'readily' | 'after-download' | 'no'
-  defaultTopK?: number
-  maxTopK?: number
-  defaultTemperature?: number
+// Chrome AI Types according to official documentation
+interface SummarizerMonitor {
+  addEventListener(event: 'downloadprogress', callback: (e: { loaded: number }) => void): void
 }
 
-interface AISummarizerOptions {
-  type?: 'tl;dr' | 'key-points' | 'teaser' | 'headline'
-  format?: 'markdown' | 'plain-text'  
-  length?: 'short' | 'medium' | 'long'
+interface SummarizerCreateOptions {
   sharedContext?: string
+  type?: 'key-points' | 'tldr' | 'teaser' | 'headline'
+  format?: 'markdown' | 'plain-text'
+  length?: 'short' | 'medium' | 'long'
+  monitor?: (monitor: SummarizerMonitor) => void
 }
 
-interface AISummarizer {
-  summarize(input: string, options?: Partial<AISummarizerOptions>): Promise<string>
+interface SummarizerInstance {
+  summarize(input: string, options?: { context?: string }): Promise<string>
+  summarizeStreaming(input: string, options?: { context?: string }): AsyncIterable<string>
   destroy(): void
+}
+
+interface SummaryOptions {
+  type: string
+  format: string
+  length: string
+  context?: string
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    Summarizer?: {
+      availability(): Promise<'unavailable' | 'downloadable' | 'downloading' | 'available'>
+      create(options?: SummarizerCreateOptions): Promise<SummarizerInstance>
+    }
+  }
 }
 
 export const useChromeAI = () => {
   const isSupported = ref(false)
   const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const error = ref<string>('')
+  const isCheckingSupport = ref(true)
 
-  // Check if Chrome Built-in AI is supported
+  // Chrome AI Methods according to official documentation
   const checkSupport = async (): Promise<boolean> => {
     try {
-      // @ts-expect-error // window.ai is injected by Chrome
-      if (typeof window === 'undefined' || !window.ai?.summarizer) {
-        error.value = 'Chrome Built-in AI is not supported in this browser'
+      // Feature detection to check if browser supports Summarizer API
+      if (typeof window === 'undefined' || !('Summarizer' in window)) {
+        error.value = 'Chrome Built-in AI Summarizer is not supported in this browser'
         return false
       }
 
-      // @ts-expect-error // window.ai is injected by Chrome
-      const capabilities = await window.ai.summarizer.capabilities()
+      // Check model availability
+      const availability = await window.Summarizer!.availability()
       
-      if (capabilities.available === 'no') {
-        error.value = 'Summarizer API is not available'
+      if (availability === 'unavailable') {
+        error.value = 'Summarizer API is not available on this device'
         return false
       }
 
-      if (capabilities.available === 'after-download') {
-        error.value = 'Summarizer API requires download. Please wait for the model to be downloaded.'
+      if (availability === 'downloading') {
+        error.value = 'Summarizer model is currently downloading. Please wait...'
         return false
       }
 
-      isSupported.value = true
-      error.value = null
-      return true
+      if (availability === 'downloadable') {
+        error.value = 'Summarizer model needs to be downloaded. Click "Summarize" to start download.'
+        // We can still proceed - model will download when user interacts
+        isSupported.value = true
+        error.value = ''
+        return true
+      }
+
+      if (availability === 'available') {
+        isSupported.value = true
+        error.value = ''
+        return true
+      }
+
+      return false
     } catch (err) {
       error.value = `Failed to check AI support: ${err instanceof Error ? err.message : 'Unknown error'}`
       return false
     }
   }
 
-  // Get summarizer capabilities
-  const getCapabilities = async (): Promise<AISummarizerCapabilities | null> => {
-    try {
-      // @ts-expect-error // window.ai is injected by Chrome
-      if (!window.ai?.summarizer) return null
-      // @ts-expect-error // window.ai is injected by Chrome
-      return await window.ai.summarizer.capabilities()
-    } catch (err) {
-      error.value = `Failed to get capabilities: ${err instanceof Error ? err.message : 'Unknown error'}`
-      return null
-    }
-  }
-
-  // Create a summarizer instance
-  const createSummarizer = async (options?: Partial<AISummarizerOptions>): Promise<AISummarizer | null> => {
-    try {
-      // @ts-expect-error // window.ai is injected by Chrome
-      if (!window.ai?.summarizer) {
-        error.value = 'Summarizer API is not available'
-        return null
-      }
-
-      isLoading.value = true
-      // @ts-expect-error // window.ai is injected by Chrome
-      const summarizer = await window.ai.summarizer.create(options)
-      error.value = null
-      return summarizer
-    } catch (err) {
-      error.value = `Failed to create summarizer: ${err instanceof Error ? err.message : 'Unknown error'}`
-      return null
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // Summarize text with error handling
-  const summarizeText = async (
-    text: string, 
-    options?: Partial<AISummarizerOptions>
-  ): Promise<string> => {
+  // AI Methods using official API
+  const summarizeText = async (text: string, options: SummaryOptions): Promise<string> => {
     if (!text.trim()) {
       throw new Error('Please provide text to summarize')
     }
 
     isLoading.value = true
-    error.value = null
+    error.value = ''
 
     try {
-      const summarizer = await createSummarizer(options)
-      
-      if (!summarizer) {
-        throw new Error('Failed to create summarizer')
+      if (!window.Summarizer) {
+        throw new Error('Summarizer API is not available')
       }
 
-      const summary = await summarizer.summarize(text, options)
+      // Verify user activation (required for downloads)
+      if (!navigator.userActivation?.isActive) {
+        throw new Error('User interaction required to use Summarizer API')
+      }
+
+      // Prepare options for create()
+      const createOptions: SummarizerCreateOptions = {
+        type: options.type as 'key-points' | 'tldr' | 'teaser' | 'headline',
+        format: options.format as 'markdown' | 'plain-text',
+        length: options.length as 'short' | 'medium' | 'long',
+        monitor: (monitor) => {
+          monitor.addEventListener('downloadprogress', (e) => {
+            console.log(`Download progress: ${Math.round(e.loaded * 100)}%`)
+          })
+        }
+      }
+
+      if (options.context) {
+        createOptions.sharedContext = options.context
+      }
+
+      const summarizer = await window.Summarizer.create(createOptions)
+      const result = await summarizer.summarize(text)
       
-      // Clean up the summarizer
+      // Clean up the summarizer object
       summarizer.destroy()
       
-      if (!summary.trim()) {
+      if (!result.trim()) {
         throw new Error('No summary was generated')
       }
-
-      return summary
+      
+      return result
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to summarize text'
       error.value = errorMessage
@@ -131,16 +142,25 @@ export const useChromeAI = () => {
 
   // Initialize on client side
   onMounted(async () => {
-    await checkSupport()
+    isCheckingSupport.value = true
+    try {
+      await checkSupport()
+    } catch (err) {
+      console.error('Failed to initialize AI:', err)
+    } finally {
+      isCheckingSupport.value = false
+    }
   })
 
   return {
+    // Reactive state (readonly for protection)
     isSupported: readonly(isSupported),
     isLoading: readonly(isLoading),
     error: readonly(error),
+    isCheckingSupport: readonly(isCheckingSupport),
+    
+    // Methods
     checkSupport,
-    getCapabilities,
-    createSummarizer,
     summarizeText
   }
 }

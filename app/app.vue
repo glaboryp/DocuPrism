@@ -80,7 +80,7 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
                   <select v-model="summaryOptions.type" class="input-field">
-                    <option value="tl;dr">TL;DR</option>
+                    <option value="tldr">TL;DR</option>
                     <option value="key-points">Key Points</option>
                     <option value="teaser">Teaser</option>
                     <option value="headline">Headline</option>
@@ -204,13 +204,12 @@
             </div>
           </div>
           
-          <!-- AI Capabilities Info -->
-          <div v-if="capabilities" class="card p-4">
-            <h3 class="text-sm font-medium text-gray-300 mb-2">AI Capabilities</h3>
+          <!-- AI Status Info -->
+          <div v-if="isSupported" class="card p-4">
+            <h3 class="text-sm font-medium text-gray-300 mb-2">AI Status</h3>
             <div class="text-xs text-gray-400 space-y-1">
-              <div>Status: <span class="text-green-400">{{ capabilities.available }}</span></div>
-              <div v-if="capabilities.defaultTopK">Top-K: {{ capabilities.defaultTopK }}</div>
-              <div v-if="capabilities.defaultTemperature">Temperature: {{ capabilities.defaultTemperature }}</div>
+              <div>Status: <span class="text-green-400">Ready</span></div>
+              <div>Model: Gemini Nano (on-device)</div>
             </div>
           </div>
         </div>
@@ -230,6 +229,7 @@
 
 <script setup lang="ts">
 import '../assets/css/main.css'
+import { useChromeAI } from '../composables/useChromeAI'
 
 // Meta and head configuration
 useHead({
@@ -239,33 +239,24 @@ useHead({
   ]
 })
 
-// Types
+// Use Chrome AI composable
+const { isSupported, isLoading, error, isCheckingSupport, summarizeText } = useChromeAI()
+
+// Types for summary options
 interface SummaryOptions {
   type: string
   format: string
   length: string
+  context?: string
 }
 
-interface AISummarizerCapabilities {
-  available: 'readily' | 'after-download' | 'no'
-  defaultTopK?: number
-  maxTopK?: number
-  defaultTemperature?: number
-  maxOutputTokens?: number
-}
-
-// Reactive state
+// Local application state
 const inputText = ref<string>('')
 const summary = ref<string>('')
-const isCheckingSupport = ref<boolean>(true)
-const capabilities = ref<AISummarizerCapabilities | null>(null)
-const isSupported = ref<boolean>(false)
-const isLoading = ref<boolean>(false)
-const error = ref<string>('')
 
 // Summary options
 const summaryOptions = ref<SummaryOptions>({
-  type: 'tl;dr',
+  type: 'tldr',
   format: 'plain-text',
   length: 'medium'
 })
@@ -286,78 +277,21 @@ const formattedSummary = computed(() => {
   return summary.value
 })
 
-// Chrome AI Methods
-const checkAISupport = async (): Promise<boolean> => {
-  try {
-    // @ts-ignore - Chrome AI types not available
-    if (typeof window === 'undefined' || !window.ai?.summarizer) {
-      error.value = 'Chrome Built-in AI is not supported in this browser'
-      return false
-    }
-
-    // @ts-ignore - Chrome AI types not available
-    const caps: AISummarizerCapabilities = await window.ai.summarizer.capabilities()
-    
-    if (caps.available === 'no') {
-      error.value = 'Summarizer API is not available'
-      return false
-    }
-
-    if (caps.available === 'after-download') {
-      error.value = 'Summarizer API requires download. Please wait for the model to be downloaded.'
-      return false
-    }
-
-    isSupported.value = true
-    capabilities.value = caps
-    error.value = ''
-    return true
-  } catch (err) {
-    error.value = `Failed to check AI support: ${err instanceof Error ? err.message : 'Unknown error'}`
-    return false
-  }
-}
-
-// AI Methods
-const summarizeText = async (text: string, options: SummaryOptions): Promise<string> => {
-  try {
-    // @ts-ignore - Chrome AI types not available
-    if (!window.ai?.summarizer) {
-      throw new Error('Summarizer API is not available')
-    }
-
-    // @ts-ignore - Chrome AI types not available
-    const summarizer = await window.ai.summarizer.create(options)
-    const result = await summarizer.summarize(text, options)
-    summarizer.destroy()
-    
-    return result
-  } catch (err) {
-    throw new Error(`Failed to summarize: ${err instanceof Error ? err.message : 'Unknown error'}`)
-  }
-}
-
-// Methods
+// Application methods
 const handleSummarize = async () => {
   if (!canSummarize.value) return
-  
-  isLoading.value = true
-  error.value = ''
   
   try {
     summary.value = await summarizeText(inputText.value, summaryOptions.value)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to summarize text'
     console.error('Summarization failed:', err)
-  } finally {
-    isLoading.value = false
+    // Error is already handled in the composable
   }
 }
 
 const clearAll = () => {
   inputText.value = ''
   summary.value = ''
-  error.value = ''
 }
 
 const copyToClipboard = async () => {
@@ -368,16 +302,4 @@ const copyToClipboard = async () => {
     console.error('Failed to copy to clipboard:', err)
   }
 }
-
-// Initialize on mount
-onMounted(async () => {
-  isCheckingSupport.value = true
-  try {
-    await checkAISupport()
-  } catch (err) {
-    console.error('Failed to initialize AI:', err)
-  } finally {
-    isCheckingSupport.value = false
-  }
-})
 </script>
