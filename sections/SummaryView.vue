@@ -129,7 +129,7 @@
           <!-- Loading State -->
           <div v-if="isLoading" class="flex items-center justify-center py-12">
             <div class="text-center">
-              <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-indigo-400 animate-spin mx-auto mb-3" />
+              <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
               <p class="text-gray-400">Analyzing your document...</p>
               <p class="text-sm text-gray-500 mt-1">This may take a few moments</p>
             </div>
@@ -137,10 +137,11 @@
           
           <!-- Summary Display -->
           <div v-else-if="summary" class="space-y-4">
-            <div class="bg-gray-700/50 rounded-lg p-4">
+            <div class="bg-white dark:bg-gray-700/50 rounded-lg p-4">
               <div class="prose prose-invert max-w-none">
-                <div v-if="summaryOptions.format === 'markdown'" class="text-gray-200" v-text="formattedSummary" />
-                <pre v-else class="whitespace-pre-wrap text-gray-200 font-normal">{{ summary }}</pre>
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <div v-if="summaryOptions.format === 'markdown'" class="text-gray-900 dark:text-gray-200" v-html="formattedSummary" />
+                <pre v-else class="whitespace-pre-wrap text-gray-900 dark:text-gray-200 font-normal">{{ summary }}</pre>
               </div>
             </div>
             
@@ -200,7 +201,7 @@ const inputText = ref<string>('')
 const summary = ref<string>('')
 const summaryOptions = ref<SummaryOptions>({
   type: 'tldr',
-  format: 'plain-text',
+  format: 'markdown',
   length: 'medium'
 })
 
@@ -211,10 +212,31 @@ const canSummarize = computed(() => {
 
 const formattedSummary = computed(() => {
   if (summaryOptions.value.format === 'markdown' && summary.value) {
-    // Basic markdown to HTML conversion for display
-    return summary.value
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Escape HTML first to prevent XSS
+    const escapedText = summary.value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+    
+    // Then apply markdown formatting
+    return escapedText
+      // Headers
+      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mt-4 mb-3">$1</h1>')
+      // Bold and italic
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+      // Lists
+      .replace(/^\* (.*$)/gm, '<li class="ml-4">• $1</li>')
+      .replace(/^- (.*$)/gm, '<li class="ml-4">• $1</li>')
+      .replace(/^\d+\. (.*$)/gm, '<li class="ml-4 list-decimal">$1</li>')
+      // Code blocks
+      .replace(/`([^`]+)`/g, '<code class="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+      // Line breaks
+      .replace(/\n\n/g, '<br><br>')
       .replace(/\n/g, '<br>')
   }
   return summary.value
