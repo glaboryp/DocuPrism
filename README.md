@@ -24,10 +24,10 @@ It's fast, secure, and works anytime, anywhere—even on a plane.
 ## 🚀 Key Features
 
 * **✨ On-Device Summarization:** Instantly get the gist of long texts using the built-in `Summarizer API`.
+* **💬 Chat with your Document:** The groundwork is laid to use the `Prompt API` to ask questions directly about the document's content.
 * **🔒 Privacy by Design:** All processing happens locally. Your documents are never uploaded, ensuring 100% confidentiality.
 * **✈️ Offline-First:** As a PWA, DocuPrism is fully functional without an internet connection.
 * **📦 Installable:** Install it on your desktop or mobile device for a native-app-like experience.
-* **💬 Chat with your Document (Coming Soon):** The groundwork is laid to use the `Prompt API` to ask questions directly about the document's content.
 
 ## 🛠️ Tech Stack
 
@@ -35,12 +35,16 @@ It's fast, secure, and works anytime, anywhere—even on a plane.
 * **Language:** [TypeScript](https://www.typescriptlang.org/)
 * **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 * **PWA / Offline Capability:** [@vite-pwa/nuxt](https://vite-pwa-org.netlify.app/)
-* **Core AI Engine:** Google Chrome's Built-in AI APIs (`window.ai`)
+* **Core AI Engine:** Google Chrome's Built-in AI APIs:
+  * [Summarizer API](https://developer.chrome.com/docs/ai/summarizer-api): For the core text summarization feature.
+  * [Prompt API](https://developer.chrome.com/docs/ai/prompt-api): To power the interactive "Chat with your Document" functionality.
+  * [Translator API](https://developer.chrome.com/docs/ai/translator-api): To provide multilingual support for summaries.
+  * [Language Detection API](https://developer.chrome.com/docs/ai/language-detection): Used internally to ensure summaries are generated in the source text's language.
 
 ## 🔗 Links
 
-* **Live Demo:** **https://docuprism.app**
-* **Video Walkthrough:** **https://[ENLACE-AL-VIDEO].com**
+* **Live Demo:** **https://docuprism.vercel.app/**
+* **Video Walkthrough:**
 
 ## ⚙️ Getting Started (Running Locally)
 
@@ -55,7 +59,7 @@ To run this project on your local machine, please follow these steps:
 
 1.  Clone the repository:
     ```bash
-    git clone [https://github.com/](https://github.com/)[TU-USUARIO-DE-GITHUB]/DocuPrism.git
+    git clone https://github.com/YOUR-GITHUB-USERNAME/DocuPrism.git
     ```
 
 2.  Navigate to the project directory:

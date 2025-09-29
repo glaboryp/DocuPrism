@@ -184,6 +184,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
+import { useOfflineStorage } from '../composables/useOfflineStorage'
 
 // Types for summary options
 interface SummaryOptions {
@@ -195,6 +196,9 @@ interface SummaryOptions {
 
 // Use Chrome AI composable directly - no props needed
 const { isSupported, isLoading, error, summarizeText } = useChromeAI()
+
+// Use offline storage composable
+const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
 
 // Local state - moved from app.vue
 const inputText = ref<string>('')
@@ -291,6 +295,17 @@ const handleSummarize = async () => {
   try {
     const result = await summarizeText(inputText.value, summaryOptions.value)
     summary.value = result
+    
+    // Save analysis offline if storage is available
+    if (isStorageAvailable.value && result) {
+      try {
+        saveAnalysis(inputText.value, result, summaryOptions.value)
+        console.log('Analysis saved offline successfully')
+      } catch (storageError) {
+        console.warn('Failed to save analysis offline:', storageError)
+        // Don't throw - offline storage failure shouldn't break the main functionality
+      }
+    }
   } catch (err) {
     console.error('Summarization failed:', err)
     // Error is already handled in the composable

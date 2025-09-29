@@ -9,27 +9,107 @@ export default defineNuxtConfig({
     registerType: 'autoUpdate',
     workbox: {
       navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      // Configuración simplificada para evitar warnings
+      globPatterns: ['**/*.{js,css,html}'],
+      globIgnores: [
+        '**/node_modules/**/*',
+        'sw.js',
+        'workbox-*.js'
+      ],
+      // Configuración avanzada para offline
+      cleanupOutdatedCaches: true,
+      clientsClaim: true,
+      skipWaiting: true,
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts-cache',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        {
+          urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'gstatic-fonts-cache',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        {
+          urlPattern: /\/_nuxt\/.*/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'nuxt-assets-cache',
+            expiration: {
+              maxEntries: 60,
+              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 días
+            }
+          }
+        }
+      ]
     },
     client: {
       installPrompt: true,
+      // Permitir instalación inmediata
+      periodicSyncForUpdates: 20
+    },
+    devOptions: {
+      enabled: true,
+      type: 'module'
     },
     manifest: {
-      name: 'DocuPrism',
+      name: 'DocuPrism - Document Analysis',
       short_name: 'DocuPrism',
-      description: 'Privacy-first, offline-capable PWA for on-device document analysis',
-      theme_color: '#6366f1',
+      description: 'Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI',
+      theme_color: '#2563eb',
       background_color: '#1f2937',
       display: 'standalone',
-      orientation: 'portrait',
+      orientation: 'portrait-primary',
       scope: '/',
       start_url: '/',
+      categories: ['productivity', 'utilities', 'education'],
+      lang: 'en',
+      dir: 'ltr',
       icons: [
         {
           src: 'icon.png',
           sizes: '512x512',
           type: 'image/png',
-          purpose: 'any maskable'
+          purpose: 'any'
+        },
+        {
+          src: 'icon.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
+        }
+      ],
+      shortcuts: [
+        {
+          name: 'New Analysis',
+          short_name: 'Analyze',
+          description: 'Start a new document analysis',
+          url: '/',
+          icons: [
+            {
+              src: 'icon.png',
+              sizes: '192x192'
+            }
+          ]
         }
       ]
     }
