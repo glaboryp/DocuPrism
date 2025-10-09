@@ -12,6 +12,9 @@
     
     <!-- PWA Components -->
     <PWAInstallPrompt />
+    
+    <!-- Development Info (solo en modo dev) -->
+    <DevOfflineInfo />
   </div>
 </template><script setup lang="ts">
 import '../assets/css/main.css'
@@ -19,6 +22,7 @@ import HeaderView from '../sections/HeaderView.vue'
 import SummaryView from '../sections/SummaryView.vue'
 import FooterView from '../sections/FooterView.vue'
 import PWAInstallPrompt from '../components/PWAInstallPrompt.vue'
+import DevOfflineInfo from '../components/DevOfflineInfo.vue'
 
 // Meta and head configuration
 useHead({

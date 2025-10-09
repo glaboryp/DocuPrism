@@ -9,18 +9,86 @@ export default defineNuxtConfig({
     registerType: 'autoUpdate',
     workbox: {
       navigateFallback: '/',
-      // Configuración simplificada para evitar warnings
-      globPatterns: ['**/*.{js,css,html}'],
+      navigateFallbackDenylist: [/^\/api\//, /^\/admin\//],
+      // Configuración agresiva para true offline-first
+      globPatterns: [
+        '**/*.{js,css,html}',
+        '**/*.{png,jpg,jpeg,gif,svg,ico,webp}',
+        '**/*.{woff,woff2,ttf,eot}'
+      ],
       globIgnores: [
         '**/node_modules/**/*',
         'sw.js',
         'workbox-*.js'
       ],
-      // Configuración avanzada para offline
+      // Configuración avanzada para offline-first
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       skipWaiting: true,
+      // Precache más agresivo
+      modifyURLPrefix: {
+        '': '/'
+      },
       runtimeCaching: [
+        // Cache de la página principal - CRUCIAL para offline-first
+        {
+          urlPattern: /^https:\/\/localhost:\d+\/$/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'main-page-cache',
+            expiration: {
+              maxEntries: 5,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 semana
+            },
+            networkTimeoutSeconds: 3
+          }
+        },
+        // Cache para cualquier dominio de la app
+        {
+          urlPattern: ({ request, url }) => {
+            return request.destination === 'document' && url.pathname === '/'
+          },
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'main-page-cache',
+            expiration: {
+              maxEntries: 5,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 semana
+            },
+            networkTimeoutSeconds: 3
+          }
+        },
+        // Assets de Nuxt - Cache First para máximo rendimiento offline
+        {
+          urlPattern: /\/_nuxt\/.*/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'nuxt-assets-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        // Imágenes y assets estáticos
+        {
+          urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'images-cache',
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        // Google Fonts
         {
           urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
           handler: 'CacheFirst',
@@ -48,17 +116,6 @@ export default defineNuxtConfig({
               statuses: [0, 200]
             }
           }
-        },
-        {
-          urlPattern: /\/_nuxt\/.*/,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'nuxt-assets-cache',
-            expiration: {
-              maxEntries: 60,
-              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 días
-            }
-          }
         }
       ]
     },
@@ -69,7 +126,8 @@ export default defineNuxtConfig({
     },
     devOptions: {
       enabled: true,
-      type: 'module'
+      type: 'module',
+      suppressWarnings: true
     },
     manifest: {
       name: 'DocuPrism - Document Analysis',
@@ -119,6 +177,12 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     typeCheck: true
+  },
+
+  // Development configuration
+  devServer: {
+    port: 3000,
+    host: 'localhost'
   },
 
   // Vite configuration with aliases

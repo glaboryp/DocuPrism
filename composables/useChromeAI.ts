@@ -65,8 +65,21 @@ export const useChromeAI = () => {
         return false
       }
 
-      // Check model availability
-      const availability = await window.Summarizer!.availability()
+      // Check if we're offline - if so, assume supported (optimistic)
+      if (!navigator.onLine) {
+        console.warn('Offline mode - assuming AI support available')
+        isSupported.value = true
+        error.value = ''
+        return true
+      }
+
+      // Check model availability with timeout
+      const availabilityPromise = window.Summarizer!.availability()
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout checking AI availability')), 5000)
+      })
+
+      const availability = await Promise.race([availabilityPromise, timeoutPromise])
       
       if (availability === 'unavailable') {
         error.value = 'Summarizer API is not available on this device'
@@ -108,15 +121,31 @@ export const useChromeAI = () => {
         return 'English'
       }
 
-      // Check API availability
-      const availability = await window.LanguageDetector.availability()
+      // If offline, skip API calls and use fallback detection
+      if (!navigator.onLine) {
+        console.warn('Offline mode - using basic language detection')
+        return basicLanguageDetection(text)
+      }
+
+      // Check API availability with timeout
+      const availabilityPromise = window.LanguageDetector.availability()
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout checking Language Detector')), 3000)
+      })
+
+      const availability = await Promise.race([availabilityPromise, timeoutPromise])
       if (availability !== 'available' && availability !== 'downloadable') {
         console.warn('Language Detector not available, falling back to English')
         return 'English'
       }
 
-      // Create detector instance
-      const detector = await window.LanguageDetector.create()
+      // Create detector instance with timeout
+      const createPromise = window.LanguageDetector.create()
+      const createTimeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout creating Language Detector')), 3000)
+      })
+
+      const detector = await Promise.race([createPromise, createTimeoutPromise])
       
       // Detect language - use first 1000 characters for better accuracy
       const sample = text.substring(0, 1000)
@@ -139,6 +168,39 @@ export const useChromeAI = () => {
       console.warn('Language detection failed:', error)
       return 'English' // Fallback to English on error
     }
+  }
+
+  // Basic language detection fallback for offline mode
+  const basicLanguageDetection = (text: string): string => {
+    const sample = text.toLowerCase().substring(0, 500)
+    
+    // Spanish indicators
+    if (sample.match(/\b(el|la|los|las|de|del|que|y|en|un|una|es|son|con|por|para|pero|como|más|muy|también|este|esta|estos|estas|todo|todos|toda|todas|si|sí|no|se|le|lo)\b/g)) {
+      return 'Spanish'
+    }
+    
+    // French indicators
+    if (sample.match(/\b(le|la|les|de|du|des|que|et|en|un|une|est|sont|avec|pour|mais|comme|plus|très|aussi|ce|cette|ces|tout|tous|toute|toutes|si|ne|se|lui)\b/g)) {
+      return 'French'
+    }
+    
+    // German indicators
+    if (sample.match(/\b(der|die|das|und|oder|ist|sind|mit|für|aber|wie|mehr|sehr|auch|diese|dieser|dieses|alle|wenn|sich|ihm|ihr)\b/g)) {
+      return 'German'
+    }
+    
+    // Italian indicators  
+    if (sample.match(/\b(il|la|lo|gli|le|di|del|della|che|e|in|un|una|è|sono|con|per|ma|come|più|molto|anche|questo|questa|questi|queste|tutto|tutti|se|si|gli)\b/g)) {
+      return 'Italian'
+    }
+    
+    // Portuguese indicators
+    if (sample.match(/\b(o|a|os|as|de|do|da|dos|das|que|e|em|um|uma|é|são|com|para|mas|como|mais|muito|também|este|esta|estes|estas|todo|todos|se|lhe|não)\b/g)) {
+      return 'Portuguese'
+    }
+    
+    // Default to English
+    return 'English'
   }
 
   // Helper function to convert language codes to full names
@@ -267,8 +329,21 @@ export const useChromeAI = () => {
         createOptions.sharedContext = languageContext
       }
 
-      const summarizer = await window.Summarizer.create(createOptions)
-      const result = await summarizer.summarize(text)
+      // Create summarizer with timeout
+      const createPromise = window.Summarizer.create(createOptions)
+      const createTimeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout creating summarizer')), 10000)
+      })
+
+      const summarizer = await Promise.race([createPromise, createTimeoutPromise])
+      
+      // Summarize with timeout
+      const summarizePromise = summarizer.summarize(text)
+      const summarizeTimeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Summarization timeout - text may be too long')), 30000)
+      })
+
+      const result = await Promise.race([summarizePromise, summarizeTimeoutPromise])
       
       // Clean up the summarizer object
       summarizer.destroy()
@@ -291,9 +366,21 @@ export const useChromeAI = () => {
   onMounted(async () => {
     isCheckingSupport.value = true
     try {
-      await checkSupport()
+      // Add timeout to prevent hanging
+      const checkPromise = checkSupport()
+      const timeoutPromise = new Promise<boolean>((resolve) => {
+        setTimeout(() => {
+          console.warn('AI support check timed out, assuming available')
+          isSupported.value = !navigator.onLine // Assume available if offline
+          resolve(!navigator.onLine)
+        }, 8000) // 8 second timeout
+      })
+
+      await Promise.race([checkPromise, timeoutPromise])
     } catch (err) {
       console.error('Failed to initialize AI:', err)
+      // Don't leave hanging - set some default state
+      isSupported.value = !navigator.onLine
     } finally {
       isCheckingSupport.value = false
     }
