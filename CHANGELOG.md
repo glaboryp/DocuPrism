@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Copy summaries directly from history
 
 - **File Upload Support**: Drag-and-drop file upload functionality
-  - Support for TXT and MD files
+  - Support for TXT, PDF, DOCX, and MD files
   - Drag-and-drop interface
   - File size validation (max 10MB)
   - Format validation with user-friendly errors
