@@ -10,8 +10,42 @@
             Document Input
           </h2>
           
+          <!-- Input Mode Tabs -->
+          <div class="flex gap-2 mb-4">
+            <button
+              :class="[
+                'px-4 py-2 rounded-lg font-medium transition-all',
+                inputMode === 'text' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ]"
+              @click="inputMode = 'text'"
+            >
+              <Icon name="heroicons:pencil-square" class="w-4 h-4 inline mr-2" />
+              Text Input
+            </button>
+            <button
+              :class="[
+                'px-4 py-2 rounded-lg font-medium transition-all',
+                inputMode === 'file' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ]"
+              @click="inputMode = 'file'"
+            >
+              <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline mr-2" />
+              File Upload
+            </button>
+          </div>
+          
+          <!-- File Upload Mode -->
+          <FileUploader 
+            v-if="inputMode === 'file'"
+            @file-loaded="handleFileLoaded"
+          />
+          
           <!-- Text Area -->
-          <div class="space-y-4">
+          <div v-if="inputMode === 'text'" class="space-y-4">
             <textarea
               v-model="inputText"
               class="textarea-field"
@@ -185,6 +219,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
+import { useToast } from '../composables/useToast'
+import FileUploader from '../components/FileUploader.vue'
 
 // Types for summary options
 interface SummaryOptions {
@@ -200,9 +236,13 @@ const { isSupported, isLoading, error, summarizeText } = useChromeAI()
 // Use offline storage composable
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
 
+// Use toast notifications
+const toast = useToast()
+
 // Local state - moved from app.vue
 const inputText = ref<string>('')
 const summary = ref<string>('')
+const inputMode = ref<'text' | 'file'>('text')
 const summaryOptions = ref<SummaryOptions>({
   type: 'tldr',
   format: 'markdown',
@@ -296,33 +336,44 @@ const handleSummarize = async () => {
     const result = await summarizeText(inputText.value, summaryOptions.value)
     summary.value = result
     
+    // Show success notification
+    toast.success('Summary generated successfully!')
+    
     // Save analysis offline if storage is available
     if (isStorageAvailable.value && result) {
       try {
         saveAnalysis(inputText.value, result, summaryOptions.value)
-        console.log('Analysis saved offline successfully')
+        toast.info('Analysis saved to history')
       } catch (storageError) {
         console.warn('Failed to save analysis offline:', storageError)
-        // Don't throw - offline storage failure shouldn't break the main functionality
+        toast.warning('Could not save to history')
       }
     }
   } catch (err) {
     console.error('Summarization failed:', err)
-    // Error is already handled in the composable
+    toast.error(err instanceof Error ? err.message : 'Failed to generate summary')
   }
 }
 
 const handleClear = () => {
   inputText.value = ''
   summary.value = ''
+  toast.info('Content cleared')
 }
 
 const handleCopy = async () => {
   try {
     await navigator.clipboard.writeText(summary.value)
-    // TODO: Add toast notification
+    toast.success('Summary copied to clipboard!')
   } catch (err) {
     console.error('Failed to copy to clipboard:', err)
+    toast.error('Failed to copy to clipboard')
   }
+}
+
+const handleFileLoaded = (content: string, filename: string) => {
+  inputText.value = content
+  inputMode.value = 'text' // Switch to text mode to show the loaded content
+  toast.info(`File "${filename}" loaded. You can now edit or summarize it.`)
 }
 </script>

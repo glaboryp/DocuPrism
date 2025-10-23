@@ -1,7 +1,31 @@
 {
-  "name": "nuxt-app",
+  "name": "docuprism",
+  "version": "1.1.0",
+  "description": "Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI",
+  "author": "glaboryp",
+  "license": "MIT",
   "type": "module",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/glaboryp/DocuPrism.git"
+  },
+  "bugs": {
+    "url": "https://github.com/glaboryp/DocuPrism/issues"
+  },
+  "homepage": "https://docuprism.vercel.app",
+  "keywords": [
+    "chrome-ai",
+    "gemini-nano",
+    "on-device-ai",
+    "summarization",
+    "pwa",
+    "offline-first",
+    "privacy",
+    "nuxt",
+    "vue",
+    "typescript"
+  ],
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",

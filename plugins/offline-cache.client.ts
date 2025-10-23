@@ -1,68 +1,23 @@
-// Plugin para mejorar el cache offline
-export default function () {
-  // Solo ejecutar en el cliente
+// Plugin to improve offline cache
+export default defineNuxtPlugin(() => {
+  // Only execute on the client
   if (typeof window === 'undefined') return
 
-  // Silenciar errores de WebSocket en desarrollo cuando está offline
-  if (import.meta.dev) {
-    const originalConsoleError = console.error
-    console.error = (...args) => {
-      // Filtrar errores conocidos de desarrollo offline
-      const errorMessage = args.join(' ')
-      
-      // Errores de WebSocket/HMR que son normales offline
-      const devOfflineErrors = [
-        'WebSocket connection',
-        'failed to connect to websocket',
-        'Cannot read properties of undefined (reading \'send\')',
-        'was preloaded using link preload but not used'
-      ]
-      
-      const shouldSilence = devOfflineErrors.some(error => 
-        errorMessage.includes(error)
-      )
-      
-      if (!shouldSilence) {
-        originalConsoleError.apply(console, args)
-      }
-    }
-
-    // También silenciar algunos warnings de desarrollo
-    const originalConsoleWarn = console.warn
-    console.warn = (...args) => {
-      const warningMessage = args.join(' ')
-      
-      const devOfflineWarnings = [
-        'vite',
-        'WebSocket',
-        'HMR'
-      ]
-      
-      const shouldSilence = devOfflineWarnings.some(warning => 
-        warningMessage.includes(warning) && !navigator.onLine
-      )
-      
-      if (!shouldSilence) {
-        originalConsoleWarn.apply(console, args)
-      }
-    }
-  }
-
-  // Registrar el service worker tan pronto como sea posible
+  // Register the service worker as soon as possible
   if ('serviceWorker' in navigator) {
-    // Precargar recursos críticos
+    // Preload critical resources
     const preloadCriticalResources = async () => {
       try {
-        // Precargar la página principal
+        // Preload the main page
         await fetch('/', { 
           method: 'GET',
           cache: 'force-cache' 
         })
 
-        // Precargar assets críticos si existen
+        // Preload critical assets if they exist
         const criticalAssets = [
           '/icon.png',
-          '/_nuxt/entry.js', // Puede variar según el build
+          '/_nuxt/entry.js', // May vary depending on build
         ]
 
         for (const asset of criticalAssets) {
@@ -72,7 +27,7 @@ export default function () {
               cache: 'force-cache' 
             })
           } catch (error) {
-            // No es crítico si falla
+            // Not critical if it fails
             console.debug(`Could not preload ${asset}:`, error)
           }
         }
@@ -81,7 +36,7 @@ export default function () {
       }
     }
 
-    // Ejecutar precarga después de que la página se haya cargado
+    // Execute preload after the page has loaded
     if (document.readyState === 'complete') {
       setTimeout(preloadCriticalResources, 1000)
     } else {
@@ -90,25 +45,25 @@ export default function () {
       })
     }
 
-    // Manejar actualizaciones del service worker
+    // Handle service worker updates
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // Nuevo service worker activo - la app puede necesitar recarga
+      // New service worker active - the app may need reload
       console.log('Service Worker updated')
       
-      // Opcional: Mostrar notificación de actualización
+      // Optional: Show update notification
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('DocuPrism actualizado', {
-          body: 'La aplicación se ha actualizado con nuevas funcionalidades.',
+        new Notification('DocuPrism updated', {
+          body: 'The application has been updated with new features.',
           icon: '/icon.png'
         })
       }
     })
 
-    // Detectar cuando la app va offline/online
+    // Detect when the app goes offline/online
     const updateOnlineStatus = () => {
       if (navigator.onLine) {
         console.log('App back online - syncing if needed')
-        // Aquí podrías sincronizar datos si fuera necesario
+        // Here you could sync data if necessary
       } else {
         console.log('App now offline - using cached resources')
       }
@@ -118,19 +73,19 @@ export default function () {
     window.addEventListener('offline', updateOnlineStatus)
   }
 
-  // Cache adicional usando la Cache API directamente
+  // Additional cache using the Cache API directly
   const cacheEssentialResources = async () => {
     if ('caches' in window) {
       try {
         const cache = await caches.open('docuprism-essential-v1')
         
-        // Recursos esenciales que SIEMPRE deben estar disponibles offline
+        // Essential resources that ALWAYS should be available offline
         const essentialResources = [
           '/',
           '/icon.png',
         ]
 
-        // Solo cachear si no están ya cacheados
+        // Only cache if not already cached
         for (const resource of essentialResources) {
           const cachedResponse = await cache.match(resource)
           if (!cachedResponse) {
@@ -147,10 +102,10 @@ export default function () {
     }
   }
 
-  // Ejecutar cache esencial
+  // Execute essential cache
   if (document.readyState === 'complete') {
     cacheEssentialResources()
   } else {
     window.addEventListener('load', cacheEssentialResources)
   }
-}
+})

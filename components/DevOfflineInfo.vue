@@ -28,9 +28,9 @@ const showDevInfo = ref(false)
 const updateOnlineStatus = () => {
   isOnline.value = navigator.onLine
   
-  // Solo mostrar info de desarrollo si está offline y es desarrollo
+  // Only show dev info if offline and in development mode
   if (import.meta.dev && !navigator.onLine) {
-    // Mostrar después de un delay para no ser intrusivo
+    // Show after a delay to not be intrusive
     setTimeout(() => {
       const dismissed = sessionStorage.getItem('dev-info-dismissed')
       if (!dismissed) {

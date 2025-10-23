@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/',
       navigateFallbackDenylist: [/^\/api\//, /^\/admin\//],
-      // Configuración agresiva para true offline-first
+      // Aggressive configuration for true offline-first
       globPatterns: [
         '**/*.{js,css,html}',
         '**/*.{png,jpg,jpeg,gif,svg,ico,webp}',
@@ -21,16 +21,16 @@ export default defineNuxtConfig({
         'sw.js',
         'workbox-*.js'
       ],
-      // Configuración avanzada para offline-first
+      // Advanced configuration for offline-first
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       skipWaiting: true,
-      // Precache más agresivo
+      // More aggressive precache
       modifyURLPrefix: {
         '': '/'
       },
       runtimeCaching: [
-        // Cache de la página principal - CRUCIAL para offline-first
+        // Main page cache - CRUCIAL for offline-first
         {
           urlPattern: /^https:\/\/localhost:\d+\/$/,
           handler: 'NetworkFirst',
@@ -43,7 +43,7 @@ export default defineNuxtConfig({
             networkTimeoutSeconds: 3
           }
         },
-        // Cache para cualquier dominio de la app
+        // Cache for any app domain
         {
           urlPattern: ({ request, url }) => {
             return request.destination === 'document' && url.pathname === '/'
@@ -53,12 +53,12 @@ export default defineNuxtConfig({
             cacheName: 'main-page-cache',
             expiration: {
               maxEntries: 5,
-              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 semana
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
             },
             networkTimeoutSeconds: 3
           }
         },
-        // Assets de Nuxt - Cache First para máximo rendimiento offline
+        // Nuxt assets - Cache First for maximum offline performance
         {
           urlPattern: /\/_nuxt\/.*/,
           handler: 'CacheFirst',
@@ -66,14 +66,14 @@ export default defineNuxtConfig({
             cacheName: 'nuxt-assets-cache',
             expiration: {
               maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
             },
             cacheableResponse: {
               statuses: [0, 200]
             }
           }
         },
-        // Imágenes y assets estáticos
+        // Images and static assets
         {
           urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
           handler: 'CacheFirst',
@@ -81,13 +81,14 @@ export default defineNuxtConfig({
             cacheName: 'images-cache',
             expiration: {
               maxEntries: 50,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
             },
             cacheableResponse: {
               statuses: [0, 200]
             }
           }
         },
+        // Google Fonts
         // Google Fonts
         {
           urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -96,7 +97,7 @@ export default defineNuxtConfig({
             cacheName: 'google-fonts-cache',
             expiration: {
               maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
             },
             cacheableResponse: {
               statuses: [0, 200]
@@ -110,7 +111,7 @@ export default defineNuxtConfig({
             cacheName: 'gstatic-fonts-cache',
             expiration: {
               maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 año
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
             },
             cacheableResponse: {
               statuses: [0, 200]
@@ -121,11 +122,11 @@ export default defineNuxtConfig({
     },
     client: {
       installPrompt: true,
-      // Permitir instalación inmediata
+      // Allow immediate installation
       periodicSyncForUpdates: 20
     },
     devOptions: {
-      enabled: true,
+      enabled: false, // Disable in development to avoid conflicts
       type: 'module',
       suppressWarnings: true
     },
@@ -191,6 +192,16 @@ export default defineNuxtConfig({
       alias: {
         '@assets': './assets',
         '@styles': './assets/css'
+      }
+    },
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        clientPort: 3000
+      },
+      watch: {
+        usePolling: false
       }
     }
   },

@@ -3,22 +3,34 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div class="flex items-center justify-between">
         <!-- Logo and Title -->
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-lg overflow-hidden">
-            <img 
-              src="../assets/images/icon.png" 
-              alt="DocuPrism Logo" 
-              class="w-full h-full object-contain"
-            >
+         <NuxtLink to="/">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg overflow-hidden">
+                <img 
+                  src="../assets/images/icon.png" 
+                  alt="DocuPrism Logo" 
+                  class="w-full h-full object-contain"
+                >
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">DocuPrism</h1>
+              <p class="text-sm text-gray-600 dark:text-gray-400">On-Device Document Analysis</p>
+            </div>
           </div>
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">DocuPrism</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400">On-Device Document Analysis</p>
-          </div>
-        </div>
+        </NuxtLink>
         
         <!-- Status Badge and Theme Toggle -->
         <div class="flex items-center space-x-3">
+          <!-- History Link -->
+          <NuxtLink
+            to="/history"
+            class="px-2 pt-1 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 group"
+            title="View History"
+            aria-label="View analysis history"
+          >
+            <Icon name="heroicons:clock" class="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+          </NuxtLink>
+          
           <!-- Theme Toggle -->
           <ThemeToggle />
           

@@ -1,4 +1,6 @@
 import { ref, readonly, onMounted } from 'vue'
+import { AI_CONFIG } from '../config/constants'
+import { createAIError, logError } from '../utils/errorHandler'
 
 // Chrome AI Types according to official documentation
 interface SummarizerMonitor {
@@ -66,8 +68,9 @@ export const useChromeAI = () => {
       }
 
       // Check if we're offline - if so, assume supported (optimistic)
+      // Chrome Built-in AI works offline, so this is safe
       if (!navigator.onLine) {
-        console.warn('Offline mode - assuming AI support available')
+        console.warn('Offline mode - AI API is local, marking as available')
         isSupported.value = true
         error.value = ''
         return true
@@ -75,8 +78,10 @@ export const useChromeAI = () => {
 
       // Check model availability with timeout
       const availabilityPromise = window.Summarizer!.availability()
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout checking AI availability')), 5000)
+      const timeoutPromise = new Promise<'available'>((resolve) => {
+        setTimeout(() => {
+          resolve('available')
+        }, AI_CONFIG.timeouts.checkSupport)
       })
 
       const availability = await Promise.race([availabilityPromise, timeoutPromise])
@@ -130,7 +135,7 @@ export const useChromeAI = () => {
       // Check API availability with timeout
       const availabilityPromise = window.LanguageDetector.availability()
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout checking Language Detector')), 3000)
+        setTimeout(() => reject(new Error('Timeout checking Language Detector')), AI_CONFIG.timeouts.languageDetection)
       })
 
       const availability = await Promise.race([availabilityPromise, timeoutPromise])
@@ -142,7 +147,7 @@ export const useChromeAI = () => {
       // Create detector instance with timeout
       const createPromise = window.LanguageDetector.create()
       const createTimeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout creating Language Detector')), 3000)
+        setTimeout(() => reject(new Error('Timeout creating Language Detector')), AI_CONFIG.timeouts.languageDetection)
       })
 
       const detector = await Promise.race([createPromise, createTimeoutPromise])
@@ -306,7 +311,7 @@ export const useChromeAI = () => {
         case 'Portuguese':
           languageContext += ' Responda em português, mantendo uma linguagem clara e natural.'
           break
-        default:
+        case 'English':
           languageContext += ' Respond in English, maintaining clear and natural language.'
       }
 
@@ -332,7 +337,7 @@ export const useChromeAI = () => {
       // Create summarizer with timeout
       const createPromise = window.Summarizer.create(createOptions)
       const createTimeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout creating summarizer')), 10000)
+        setTimeout(() => reject(createAIError('timeout')), AI_CONFIG.timeouts.createSummarizer)
       })
 
       const summarizer = await Promise.race([createPromise, createTimeoutPromise])
@@ -340,7 +345,7 @@ export const useChromeAI = () => {
       // Summarize with timeout
       const summarizePromise = summarizer.summarize(text)
       const summarizeTimeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Summarization timeout - text may be too long')), 30000)
+        setTimeout(() => reject(createAIError('timeout', undefined, { textLength: text.length })), AI_CONFIG.timeouts.summarize)
       })
 
       const result = await Promise.race([summarizePromise, summarizeTimeoutPromise])
@@ -354,9 +359,10 @@ export const useChromeAI = () => {
       
       return result
     } catch (err) {
+      logError(err, { textLength: text.length, options })
       const errorMessage = err instanceof Error ? err.message : 'Failed to summarize text'
       error.value = errorMessage
-      throw new Error(errorMessage)
+      throw err
     } finally {
       isLoading.value = false
     }
@@ -370,17 +376,30 @@ export const useChromeAI = () => {
       const checkPromise = checkSupport()
       const timeoutPromise = new Promise<boolean>((resolve) => {
         setTimeout(() => {
-          console.warn('AI support check timed out, assuming available')
-          isSupported.value = !navigator.onLine // Assume available if offline
-          resolve(!navigator.onLine)
-        }, 8000) // 8 second timeout
+          // If Summarizer API exists, assume it's available
+          if (typeof window !== 'undefined' && 'Summarizer' in window) {
+            isSupported.value = true
+            error.value = ''
+            resolve(true)
+          } else {
+            isSupported.value = false
+            error.value = 'Chrome Built-in AI not available'
+            resolve(false)
+          }
+        }, 10000) // Increased to 10 seconds
       })
 
       await Promise.race([checkPromise, timeoutPromise])
     } catch (err) {
       console.error('Failed to initialize AI:', err)
-      // Don't leave hanging - set some default state
-      isSupported.value = !navigator.onLine
+      // If API exists but check failed, assume it's available
+      if (typeof window !== 'undefined' && 'Summarizer' in window) {
+        isSupported.value = true
+        error.value = ''
+      } else {
+        isSupported.value = false
+        error.value = 'Chrome Built-in AI not available'
+      }
     } finally {
       isCheckingSupport.value = false
     }

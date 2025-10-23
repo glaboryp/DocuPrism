@@ -1,21 +1,9 @@
 import { ref, readonly, onMounted } from 'vue'
-
-// Types for offline storage
-interface StoredData {
-  id: string
-  timestamp: number
-  inputText: string
-  summary: string
-  options: {
-    type: string
-    format: string
-    length: string
-  }
-}
+import type { StoredAnalysis } from '../types/storage'
 
 export const useOfflineStorage = () => {
   const isStorageAvailable = ref(true)
-  const storedAnalyses = ref<StoredData[]>([])
+  const storedAnalyses = ref<StoredAnalysis[]>([])
 
   // Check if storage is available
   const checkStorageAvailability = (): boolean => {
@@ -47,7 +35,7 @@ export const useOfflineStorage = () => {
     }
 
     const id = generateId()
-    const analysis: StoredData = {
+    const analysis: StoredAnalysis = {
       id,
       timestamp: Date.now(),
       inputText: inputText.substring(0, 1000), // Store first 1000 chars for preview
@@ -79,7 +67,7 @@ export const useOfflineStorage = () => {
   }
 
   // Get all stored analyses
-  const getStoredAnalyses = (): StoredData[] => {
+  const getStoredAnalyses = (): StoredAnalysis[] => {
     if (!isStorageAvailable.value || typeof window === 'undefined') {
       return []
     }
@@ -87,7 +75,7 @@ export const useOfflineStorage = () => {
     try {
       const stored = localStorage.getItem('docuprism-analyses')
       if (stored) {
-        const analyses = JSON.parse(stored) as StoredData[]
+        const analyses = JSON.parse(stored) as StoredAnalysis[]
         storedAnalyses.value = analyses
         return analyses
       }
@@ -99,7 +87,7 @@ export const useOfflineStorage = () => {
   }
 
   // Get specific analysis by ID
-  const getAnalysisById = (id: string): StoredData | null => {
+  const getAnalysisById = (id: string): StoredAnalysis | null => {
     const analyses = getStoredAnalyses()
     return analyses.find(analysis => analysis.id === id) || null
   }
