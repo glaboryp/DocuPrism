@@ -17,8 +17,10 @@
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 inputMode === 'text' 
                   ? 'bg-primary text-white' 
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600',
+                isCheckingSupport && 'opacity-50 cursor-not-allowed'
               ]"
+              :disabled="isCheckingSupport"
               @click="inputMode = 'text'"
             >
               <Icon name="heroicons:pencil-square" class="w-4 h-4 inline mr-2" />
@@ -29,8 +31,10 @@
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 inputMode === 'file' 
                   ? 'bg-primary text-white' 
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600',
+                isCheckingSupport && 'opacity-50 cursor-not-allowed'
               ]"
+              :disabled="isCheckingSupport"
               @click="inputMode = 'file'"
             >
               <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline mr-2" />
@@ -51,7 +55,7 @@
               class="textarea-field"
               :rows="textareaRows"
               placeholder="Paste your document text here for analysis..."
-              :disabled="isLoading"
+              :disabled="isLoading || isCheckingSupport"
             />
             
             <!-- Character Counter -->
@@ -132,7 +136,7 @@
             </button>
             
             <button
-              :disabled="isLoading"
+              :disabled="isLoading || isCheckingSupport"
               class="btn-secondary"
               @click="handleClear"
             >
@@ -231,7 +235,7 @@ interface SummaryOptions {
 }
 
 // Use Chrome AI composable directly - no props needed
-const { isSupported, isLoading, error, summarizeText } = useChromeAI()
+const { isSupported, isLoading, error, isCheckingSupport, summarizeText } = useChromeAI()
 
 // Use offline storage composable
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
@@ -251,7 +255,7 @@ const summaryOptions = ref<SummaryOptions>({
 
 // Computed properties - moved from app.vue
 const canSummarize = computed(() => {
-  return isSupported.value && inputText.value.trim().length > 0 && !isLoading.value
+  return isSupported.value && inputText.value.trim().length > 0 && !isLoading.value && !isCheckingSupport.value
 })
 
 const formattedSummary = computed(() => {

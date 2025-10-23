@@ -24,7 +24,12 @@
           <!-- History Link -->
           <NuxtLink
             to="/history"
-            class="px-2 pt-1 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 group"
+            :class="[
+              'px-2 pt-1 rounded-lg bg-gray-100 dark:bg-gray-700 transition-all duration-200 shadow-sm border border-gray-200 dark:border-gray-600 group',
+              isCheckingSupport 
+                ? 'opacity-50 cursor-not-allowed pointer-events-none' 
+                : 'hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-md'
+            ]"
             title="View History"
             aria-label="View analysis history"
           >
@@ -89,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import AIRequirementsModal from '../components/AIRequirementsModal.vue'
@@ -97,6 +102,16 @@ import AIRequirementsModal from '../components/AIRequirementsModal.vue'
 // Use Chrome AI composable directly
 const { isSupported, isCheckingSupport } = useChromeAI()
 
-// Modal state
 const showModal = ref(false)
+
+// Auto-open modal when AI is not supported after checking
+watch([isCheckingSupport, isSupported], ([checking, supported]) => {
+  // When checking finishes and AI is not supported, open modal
+  if (!checking && !supported) {
+    // Small delay to let the UI settle
+    setTimeout(() => {
+      showModal.value = true
+    }, 500)
+  }
+})
 </script>

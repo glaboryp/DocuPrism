@@ -39,13 +39,13 @@ export enum ErrorCode {
 export class AppError extends Error {
   code: ErrorCode
   originalError?: Error
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 
   constructor(
     code: ErrorCode,
     message?: string,
     originalError?: Error,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(message || 'An error occurred')
     this.name = 'AppError'
@@ -58,7 +58,7 @@ export class AppError extends Error {
 export const createAIError = (
   type: 'notSupported' | 'notAvailable' | 'downloading' | 'timeout' | 'userActivation' | 'noResult' | 'failed',
   originalError?: Error,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ): AppError => {
   const errorMap = {
     notSupported: { code: ErrorCode.AI_NOT_SUPPORTED, message: ERROR_MESSAGES.ai.notSupported },
@@ -77,7 +77,7 @@ export const createAIError = (
 export const createStorageError = (
   type: 'notAvailable' | 'saveFailed' | 'loadFailed' | 'deleteFailed' | 'clearFailed',
   originalError?: Error,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ): AppError => {
   const errorMap = {
     notAvailable: { code: ErrorCode.STORAGE_NOT_AVAILABLE, message: ERROR_MESSAGES.storage.notAvailable },
@@ -94,7 +94,7 @@ export const createStorageError = (
 export const createFileError = (
   type: 'tooLarge' | 'unsupportedFormat' | 'readFailed' | 'empty' | 'pdfNotSupported' | 'docxNotSupported',
   originalError?: Error,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ): AppError => {
   const errorMap = {
     tooLarge: { code: ErrorCode.FILE_TOO_LARGE, message: ERROR_MESSAGES.file.tooLarge },
@@ -126,7 +126,7 @@ export const getErrorMessage = (error: unknown): string => {
   return appError.message
 }
 
-export const logError = (error: unknown, context?: Record<string, any>) => {
+export const logError = (error: unknown, context?: Record<string, unknown>) => {
   const appError = handleError(error)
   
   console.error('[DocuPrism Error]', {

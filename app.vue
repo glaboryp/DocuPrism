@@ -1,9 +1,9 @@
-<template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
-</template><script setup lang="ts">
+<script setup lang="ts">
 import '../assets/css/main.css'
+import { useChromeAI } from './composables/useChromeAI'
+
+// Get checking state from Chrome AI
+const { isCheckingSupport } = useChromeAI()
 
 // Meta and head configuration
 useHead({
@@ -45,5 +45,33 @@ useHead({
     }
   ]
 })
-
 </script>
+
+<template>
+  <div>
+    <!-- Loading Overlay during AI checking -->
+    <Transition name="fade">
+      <div
+        v-if="isCheckingSupport"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm"
+      >
+        <div class="text-center">
+          <Icon name="heroicons:arrow-path" class="w-16 h-16 text-primary animate-spin mx-auto mb-4" />
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Initializing AI
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">
+            Checking Chrome Built-in AI availability...
+          </p>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Main App -->
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </div>
+</template>
+
+
