@@ -70,22 +70,9 @@ It's fast, secure, and works anytime, anywhere—even on a plane.
 
 ## 🔗 Links
 
-* **Live Demo:** **https://docuprism.vercel.app/**
+* **Live Demo:** https://docuprism.vercel.app/
 * **GitHub Repository:** https://github.com/glaboryp/DocuPrism
 * **Video Walkthrough:** *(Coming soon)*
-
-## 📸 Screenshots
-
-### Main Interface
-The main document analysis interface with text input and summary options.
-
-### History View
-Browse and manage your saved analyses with local storage.
-
-### Dark Mode
-Full dark mode support for comfortable viewing in any lighting condition.
-
-> **Note:** Add screenshots to `/public/screenshots/` directory for display here.
 
 ## ⚙️ Getting Started (Running Locally)
 
@@ -233,16 +220,15 @@ DocuPrism is built with privacy as a core principle:
 - [x] PWA with offline support
 - [x] Toast notifications
 - [x] Responsive design
+- [x] PDF file support
+- [x] DOCX file support
 
 ### In Progress 🚧
-- [ ] PDF file support
-- [ ] DOCX file support
 - [ ] Export summaries (PDF, TXT, MD)
 - [ ] Chat with document (Prompt API)
 - [ ] Batch processing
 
 ### Planned 📋
-- [ ] Browser extension version
 - [ ] Advanced search in history
 - [ ] Custom summary templates
 - [ ] Keyboard shortcuts
