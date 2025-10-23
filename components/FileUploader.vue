@@ -33,7 +33,7 @@
             ref="fileInput"
             type="file"
             class="hidden"
-            :accept="acceptedFormats.join(',')"
+            :accept="[...acceptedFormats, acceptedMimeTypes].join(',')"
             @change="handleFileSelect"
           >
         </label>
@@ -76,13 +76,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useToast } from '../composables/useToast'
+import { parseDocument, getSupportedExtensions, getSupportedMimeTypes, isFileSupported } from '../utils/documentParser'
 
 interface Props {
   maxSizeMB?: number
 }
 
 interface Emits {
-  (e: 'file-loaded', content: string, filename: string): void
+  (e: 'file-loaded', content: string, filename: string, metadata?: { wordCount: number, charCount: number, pageCount?: number }): void
   (e: 'error', message: string): void
 }
 
@@ -98,7 +99,8 @@ const isLoading = ref(false)
 const selectedFile = ref<File | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const acceptedFormats = ['.txt', '.pdf', '.docx', '.doc', '.md']
+const acceptedFormats = getSupportedExtensions()
+const acceptedMimeTypes = getSupportedMimeTypes().join(',')
 const maxSizeBytes = props.maxSizeMB * 1024 * 1024
 
 const formatFileSize = (bytes: number): string => {
@@ -142,10 +144,9 @@ const processFile = async (file: File) => {
     return
   }
   
-  // Validate file type
-  const extension = '.' + file.name.split('.').pop()?.toLowerCase()
-  if (!acceptedFormats.includes(extension)) {
-    const errorMsg = 'Unsupported file format. Please use TXT, PDF, or DOCX files.'
+  // Validate file type using our utility
+  if (!isFileSupported(file)) {
+    const errorMsg = 'Unsupported file format. Please use TXT, PDF, DOCX, or MD files.'
     toast.error(errorMsg)
     emit('error', errorMsg)
     return
@@ -155,22 +156,30 @@ const processFile = async (file: File) => {
   isLoading.value = true
   
   try {
-    let content = ''
+    // Use our document parser utility
+    const result = await parseDocument(file)
     
-    if (extension === '.txt' || extension === '.md') {
-      content = await readTextFile(file)
-    } else if (extension === '.pdf') {
-      content = await readPDFFile(file)
-    } else if (extension === '.docx' || extension === '.doc') {
-      content = await readDocxFile(file)
+    // Check for parsing errors
+    if (result.error) {
+      throw new Error(result.error)
     }
     
-    if (!content.trim()) {
+    if (!result.text.trim()) {
       throw new Error('File appears to be empty or could not be read')
     }
     
-    emit('file-loaded', content, file.name)
-    toast.success(`File "${file.name}" loaded successfully!`)
+    // Emit the loaded content with metadata
+    emit('file-loaded', result.text, file.name, {
+      wordCount: result.wordCount,
+      charCount: result.charCount,
+      pageCount: result.pageCount
+    })
+    
+    // Show success message with file info
+    const fileInfo = result.pageCount 
+      ? `${result.pageCount} pages, ${result.wordCount} words`
+      : `${result.wordCount} words`
+    toast.success(`File "${file.name}" loaded successfully! (${fileInfo})`)
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Failed to read file'
     toast.error(errorMsg)
@@ -179,32 +188,6 @@ const processFile = async (file: File) => {
   } finally {
     isLoading.value = false
   }
-}
-
-const readTextFile = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const content = e.target?.result as string
-      resolve(content)
-    }
-    reader.onerror = () => reject(new Error('Failed to read text file'))
-    reader.readAsText(file)
-  })
-}
-
-const readPDFFile = async (_file: File): Promise<string> => {
-  // For now, we'll show a message that PDF support requires additional library
-  // In production, you would use pdf.js or similar
-  toast.warning('PDF support coming soon. Please convert to TXT for now.')
-  throw new Error('PDF files are not yet supported. Please use TXT or DOCX files.')
-}
-
-const readDocxFile = async (_file: File): Promise<string> => {
-  // For now, we'll show a message that DOCX support requires additional library
-  // In production, you would use mammoth.js or similar
-  toast.warning('DOCX support coming soon. Please convert to TXT for now.')
-  throw new Error('DOCX files are not yet supported. Please use TXT files.')
 }
 
 const clearFile = () => {

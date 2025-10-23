@@ -371,9 +371,20 @@ const handleCopy = async () => {
   }
 }
 
-const handleFileLoaded = (content: string, filename: string) => {
+const handleFileLoaded = (
+  content: string, 
+  filename: string, 
+  metadata?: { wordCount: number, charCount: number, pageCount?: number }
+) => {
   inputText.value = content
   inputMode.value = 'text' // Switch to text mode to show the loaded content
-  toast.info(`File "${filename}" loaded. You can now edit or summarize it.`)
+  
+  // Show detailed info message
+  if (metadata) {
+    const pageInfo = metadata.pageCount ? ` (${metadata.pageCount} pages)` : ''
+    toast.info(`File "${filename}" loaded${pageInfo}. ${metadata.wordCount} words ready to summarize.`)
+  } else {
+    toast.info(`File "${filename}" loaded. You can now edit or summarize it.`)
+  }
 }
 </script>
