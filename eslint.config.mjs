@@ -9,7 +9,9 @@ export default withNuxt(
       '@typescript-eslint/no-unused-vars': 'warn',
       // Allow Tailwind CSS class names
       'vue/max-attributes-per-line': 'off',
-      'vue/singleline-html-element-content-newline': 'off'
+      'vue/singleline-html-element-content-newline': 'off',
+      // Allow single-word component names (useful for Nuxt pages like index.vue, history.vue)
+      'vue/multi-word-component-names': 'off'
     },
     ignores: [
       // Ignore Tailwind CSS generated files
