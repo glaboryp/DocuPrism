@@ -22,9 +22,12 @@
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import HeaderView from '../sections/HeaderView.vue'
 import FooterView from '../sections/FooterView.vue'
-import PWAInstallPrompt from '../components/PWAInstallPrompt.vue'
-import DevOfflineInfo from '../components/DevOfflineInfo.vue'
 import ToastContainer from '../components/ToastContainer.vue'
+
+// Lazy load components that are not immediately critical
+const PWAInstallPrompt = defineAsyncComponent(() => import('../components/PWAInstallPrompt.vue'))
+const DevOfflineInfo = defineAsyncComponent(() => import('../components/DevOfflineInfo.vue'))
 </script>

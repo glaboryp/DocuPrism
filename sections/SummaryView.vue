@@ -55,7 +55,15 @@
             role="tabpanel"
             aria-labelledby="file-upload-tab"
           >
-            <FileUploader @file-loaded="handleFileLoaded" />
+            <Suspense>
+              <FileUploader @file-loaded="handleFileLoaded" />
+              <template #fallback>
+                <div class="flex items-center justify-center py-12">
+                  <Icon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin mr-2" />
+                  <span class="text-gray-600 dark:text-gray-400">Loading uploader...</span>
+                </div>
+              </template>
+            </Suspense>
           </div>
           
           <!-- Text Area -->
@@ -285,10 +293,18 @@
             aria-labelledby="chat-tab"
             class="h-[600px]"
           >
-            <ChatInterface 
-              :document-text="inputText"
-              :has-document="inputText.trim().length > 0"
-            />
+            <Suspense>
+              <ChatInterface 
+                :document-text="inputText"
+                :has-document="inputText.trim().length > 0"
+              />
+              <template #fallback>
+                <div class="flex items-center justify-center h-full">
+                  <Icon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin mr-2" />
+                  <span class="text-gray-600 dark:text-gray-400">Loading chat...</span>
+                </div>
+              </template>
+            </Suspense>
           </div>
         </div>
         
@@ -306,14 +322,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import { formatMarkdown } from '../utils/markdownFormatter'
-import FileUploader from '../components/FileUploader.vue'
-import ChatInterface from '../components/ChatInterface.vue'
+
+// Lazy load heavy components for better initial load performance
+const FileUploader = defineAsyncComponent(() => import('../components/FileUploader.vue'))
+const ChatInterface = defineAsyncComponent(() => import('../components/ChatInterface.vue'))
 
 // Types for summary options
 interface SummaryOptions {

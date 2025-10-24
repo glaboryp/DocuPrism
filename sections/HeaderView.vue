@@ -94,10 +94,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import ThemeToggle from '../components/ThemeToggle.vue'
-import AIRequirementsModal from '../components/AIRequirementsModal.vue'
+
+// Lazy load modal since it's only shown when needed
+const AIRequirementsModal = defineAsyncComponent(() => import('../components/AIRequirementsModal.vue'))
 
 // Use Chrome AI composable directly
 const { isSupported, isCheckingSupport } = useChromeAI()
