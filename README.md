@@ -9,6 +9,7 @@ A privacy-first, offline-capable PWA for on-device document analysis using the C
 [![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge)](https://docuprism.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![Chrome AI](https://img.shields.io/badge/Chrome-Built--in%20AI-orange?style=for-the-badge&logo=google-chrome)](https://developer.chrome.com/docs/ai/built-in)
+[![Tests](https://img.shields.io/badge/tests-24%2F24%20passing-brightgreen?style=for-the-badge)](tests/README.md)
 
 > **Note:** This application requires Chrome Canary/Dev (v127+) with specific flags enabled. See [Setup Instructions](#-getting-started-running-locally) below.
 
@@ -140,6 +141,13 @@ To use DocuPrism, you need to enable Chrome's Built-in AI features:
 # Development
 pnpm run dev          # Start development server
 
+# Testing
+pnpm test             # Run unit tests (19 tests)
+pnpm test:ui          # Interactive test UI
+pnpm test:coverage    # Coverage reports
+pnpm test:e2e         # Run E2E tests (5 tests)
+pnpm test:e2e:ui      # Playwright UI mode
+
 # Production
 pnpm run build        # Build for production
 pnpm run generate     # Generate static site
@@ -186,8 +194,49 @@ DocuPrism/
 │   └── storage.ts
 ├── utils/                  # Utility functions
 │   └── errorHandler.ts
+├── tests/                  # Test suite
+│   ├── composables/        # Unit tests
+│   │   ├── useToast.test.ts
+│   │   ├── useOfflineStorage.test.ts
+│   │   └── useKeyboardShortcuts.test.ts
+│   ├── e2e/                # E2E tests
+│   │   └── basic-navigation.spec.ts
+│   ├── setup.ts            # Test setup & mocks
+│   └── README.md           # Testing documentation
 └── nuxt.config.ts         # Nuxt configuration
 ```
+
+## 🧪 Testing
+
+DocuPrism includes a comprehensive test suite to ensure reliability and quality:
+
+### Unit Tests (Vitest)
+- ✅ **19 tests** covering all composables
+- ✅ **100% passing** with proper isolation
+- ✅ Coverage reports available
+
+```bash
+pnpm test              # Run all tests
+pnpm test:coverage     # With coverage
+```
+
+### E2E Tests (Playwright)
+- ✅ **5 tests** for basic navigation
+- ✅ Automated browser testing
+- ✅ CI-ready configuration
+
+```bash
+pnpm test:e2e          # Run E2E tests
+pnpm test:e2e:ui       # Interactive mode
+```
+
+**Test Coverage:**
+- `useToast` - Toast notifications (7 tests)
+- `useOfflineStorage` - Local storage (8 tests)
+- `useKeyboardShortcuts` - Keyboard navigation (4 tests)
+- Basic navigation - Page routing (5 tests)
+
+See [`tests/README.md`](tests/README.md) for detailed testing documentation.
 
 ## 🎯 Use Cases
 

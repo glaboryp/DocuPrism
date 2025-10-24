@@ -9,6 +9,7 @@ export interface Toast {
 
 const toasts = ref<Toast[]>([])
 let toastIdCounter = 0
+const MAX_TOASTS = 5
 
 export const useToast = () => {
   const show = (message: string, type: Toast['type'] = 'info', duration = 3000) => {
@@ -22,6 +23,11 @@ export const useToast = () => {
     }
     
     toasts.value.push(toast)
+    
+    // Limit number of toasts
+    if (toasts.value.length > MAX_TOASTS) {
+      toasts.value = toasts.value.slice(-MAX_TOASTS)
+    }
     
     // Auto-remove after duration
     if (duration > 0) {

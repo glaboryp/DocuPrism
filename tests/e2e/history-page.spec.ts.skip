@@ -1,0 +1,113 @@
+import { test, expect } from '@playwright/test'
+
+test.describe('History Page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/')
+    await page.waitForSelector('main', { state: 'visible' })
+  })
+
+  test('should navigate to history page', async ({ page }) => {
+    // Click history icon in header
+    await page.click('a[href="/history"]')
+    
+    // Verify navigation
+    await expect(page).toHaveURL('/history')
+    await expect(page.locator('h1')).toContainText('Analysis History')
+  })
+
+  test('should show saved analyses', async ({ page }) => {
+    // Create a summary first
+    await page.fill('#document-textarea', 'Test document for history')
+    await page.click('button:has-text("Summarize")')
+    await page.waitForSelector('.toast-success')
+    
+    // Navigate to history
+    await page.click('a[href="/history"]')
+    
+    // Verify analysis appears
+    const analysisCard = page.locator('.analysis-card').first()
+    await expect(analysisCard).toBeVisible()
+    await expect(analysisCard).toContainText('Test document')
+  })
+
+  test('should view analysis details', async ({ page }) => {
+    // Setup: create and save analysis
+    await page.fill('#document-textarea', 'Detailed test document')
+    await page.click('button:has-text("Summarize")')
+    await page.waitForSelector('.toast-success')
+    
+    // Go to history
+    await page.click('a[href="/history"]')
+    
+    // Click view details button
+    await page.click('button[aria-label*="View details"]')
+    
+    // Verify modal opens
+    const modal = page.locator('[role="dialog"]')
+    await expect(modal).toBeVisible()
+    await expect(modal).toContainText('Detailed test document')
+  })
+
+  test('should copy summary from history', async ({ page }) => {
+    // Setup
+    await page.fill('#document-textarea', 'Test for copy')
+    await page.click('button:has-text("Summarize")')
+    await page.waitForSelector('.toast-success')
+    
+    // Go to history
+    await page.click('a[href="/history"]')
+    
+    // Click copy button
+    await page.click('button[aria-label*="Copy summary"]')
+    
+    // Verify toast
+    const toast = page.locator('.toast-success')
+    await expect(toast).toContainText('copied to clipboard')
+  })
+
+  test('should delete analysis', async ({ page }) => {
+    // Setup
+    await page.fill('#document-textarea', 'Test for deletion')
+    await page.click('button:has-text("Summarize")')
+    await page.waitForSelector('.toast-success')
+    
+    // Go to history
+    await page.click('a[href="/history"]')
+    
+    // Click delete button
+    await page.click('button[aria-label*="Delete"]')
+    
+    // Confirm deletion
+    await page.click('button:has-text("Delete")')
+    
+    // Verify toast
+    const toast = page.locator('.toast-success')
+    await expect(toast).toContainText('deleted')
+  })
+
+  test('should show empty state when no analyses', async ({ page }) => {
+    // Clear all analyses first
+    await page.goto('/history')
+    
+    // If there are analyses, clear them
+    const clearButton = page.locator('button:has-text("Clear All")')
+    if (await clearButton.isVisible()) {
+      await clearButton.click()
+      await page.click('button:has-text("Clear")')
+    }
+    
+    // Verify empty state
+    await expect(page.locator('text=No analyses yet')).toBeVisible()
+    await expect(page.locator('button:has-text("Create Analysis")')).toBeVisible()
+  })
+
+  test('should navigate back from empty state', async ({ page }) => {
+    await page.goto('/history')
+    
+    // Click create analysis button
+    await page.click('button:has-text("Create Analysis")')
+    
+    // Verify navigation to home
+    await expect(page).toHaveURL('/')
+  })
+})

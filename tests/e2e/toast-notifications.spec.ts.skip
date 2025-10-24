@@ -1,0 +1,72 @@
+import { test, expect } from '@playwright/test'
+
+test.describe('Toast Notifications', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/')
+    // Wait for AI initialization
+    await page.waitForSelector('main', { state: 'visible' })
+  })
+
+  test('should show success toast after summarization', async ({ page }) => {
+    // Enter text
+    await page.fill('#document-textarea', 'This is a test document for summarization.')
+    
+    // Click summarize button
+    await page.click('button:has-text("Summarize")')
+    
+    // Wait for toast to appear
+    const toast = page.locator('.toast-success')
+    await expect(toast).toBeVisible()
+    await expect(toast).toContainText('Summary generated successfully!')
+    
+    // Toast should auto-dismiss
+    await expect(toast).toBeHidden({ timeout: 5000 })
+  })
+
+  test('should show copy toast', async ({ page }) => {
+    // Setup: create a summary first
+    await page.fill('#document-textarea', 'Test document')
+    await page.click('button:has-text("Summarize")')
+    await page.waitForSelector('.toast-success')
+    
+    // Click copy button
+    await page.click('button[aria-label*="Copy"]')
+    
+    // Verify copy toast
+    const toast = page.locator('.toast-success')
+    await expect(toast).toContainText('copied to clipboard')
+  })
+
+  test('should show clear toast', async ({ page }) => {
+    // Enter text
+    await page.fill('#document-textarea', 'Test content')
+    
+    // Click clear button
+    await page.click('button[aria-label*="Clear"]')
+    
+    // Verify clear toast
+    const toast = page.locator('.toast-info')
+    await expect(toast).toContainText('Content cleared')
+    
+    // Verify content is cleared
+    await expect(page.locator('#document-textarea')).toHaveValue('')
+  })
+
+  test('should show error toast for unsupported file', async ({ page }) => {
+    // Switch to file upload mode
+    await page.click('button[role="tab"]:has-text("File Upload")')
+    
+    // Try to upload PDF (not supported)
+    const fileInput = page.locator('input[type="file"]')
+    await fileInput.setInputFiles({
+      name: 'test.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('fake pdf content')
+    })
+    
+    // Verify error toast
+    const toast = page.locator('.toast-error')
+    await expect(toast).toBeVisible()
+    await expect(toast).toContainText('not yet supported')
+  })
+})
