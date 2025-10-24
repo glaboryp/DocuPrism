@@ -311,6 +311,7 @@ import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
+import { formatMarkdown } from '../utils/markdownFormatter'
 import FileUploader from '../components/FileUploader.vue'
 import ChatInterface from '../components/ChatInterface.vue'
 
@@ -349,32 +350,8 @@ const canSummarize = computed(() => {
 
 const formattedSummary = computed(() => {
   if (summaryOptions.value.format === 'markdown' && summary.value) {
-    // Escape HTML first to prevent XSS
-    const escapedText = summary.value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;')
-    
-    // Then apply markdown formatting
-    return escapedText
-      // Headers
-      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>')
-      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mt-4 mb-3">$1</h1>')
-      // Bold and italic
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
-      // Lists
-      .replace(/^\* (.*$)/gm, '<li class="ml-4">• $1</li>')
-      .replace(/^- (.*$)/gm, '<li class="ml-4">• $1</li>')
-      .replace(/^\d+\. (.*$)/gm, '<li class="ml-4 list-decimal">$1</li>')
-      // Code blocks
-      .replace(/`([^`]+)`/g, '<code class="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
-      // Line breaks
-      .replace(/\n\n/g, '<br><br>')
-      .replace(/\n/g, '<br>')
+    // Use the new markdown formatter utility with built-in sanitization
+    return formatMarkdown(summary.value)
   }
   return summary.value
 })

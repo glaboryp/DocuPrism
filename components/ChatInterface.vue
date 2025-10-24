@@ -88,11 +88,11 @@
           <p v-if="message.role === 'user'" class="text-sm whitespace-pre-wrap">
             {{ message.content }}
           </p>
-          <!-- Assistant messages: render markdown -->
+          <!-- Assistant messages: render markdown (sanitized via formatMarkdown utility) -->
           <div 
             v-else 
             class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
-            v-html="formatMarkdown(message.content)"
+            v-html="formatMarkdown(message.content)" 
           />
           <span class="text-xs opacity-70 mt-1 block">
             {{ formatTime(message.timestamp) }}
@@ -110,12 +110,12 @@
         </div>
       </div>
 
-      <!-- Streaming message -->
+      <!-- Streaming message (sanitized via formatMarkdown utility) -->
       <div v-if="streamingMessage" class="flex justify-start">
         <div class="max-w-[80%] bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
           <div 
             class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 text-gray-900 dark:text-white"
-            v-html="formatMarkdown(streamingMessage)"
+            v-html="formatMarkdown(streamingMessage)" 
           />
         </div>
       </div>
@@ -152,7 +152,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue'
-import { marked } from 'marked'
+import { formatMarkdown } from '../utils/markdownFormatter'
 import { useChromePrompt } from '../composables/useChromePrompt'
 import { useToast } from '../composables/useToast'
 
@@ -268,20 +268,8 @@ const formatTime = (timestamp: number): string => {
   })
 }
 
-const formatMarkdown = (text: string): string => {
-  try {
-    // Configure marked for inline rendering (no wrapping in <p> tags for single lines)
-    marked.setOptions({
-      breaks: true,  // Convert \n to <br>
-      gfm: true,     // GitHub Flavored Markdown
-    })
-    
-    return marked.parse(text) as string
-  } catch (error) {
-    console.error('Error formatting markdown:', error)
-    return text
-  }
-}
+// Use the imported formatMarkdown utility from utils/markdownFormatter.ts
+// It provides secure markdown formatting with built-in sanitization
 
 // Scroll to bottom when new messages arrive
 watch(chatHistory, () => {

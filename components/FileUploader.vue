@@ -76,7 +76,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useToast } from '../composables/useToast'
-import { parseDocument, getSupportedExtensions, getSupportedMimeTypes, isFileSupported } from '../utils/documentParser'
+import { parseDocument, getSupportedExtensions, getSupportedMimeTypes } from '../utils/documentParser'
+import { validateFileSize, validateFileType, formatFileSize } from '../utils/validators'
 
 interface Props {
   maxSizeMB?: number
@@ -101,15 +102,6 @@ const fileInput = ref<HTMLInputElement | null>(null)
 
 const acceptedFormats = getSupportedExtensions()
 const acceptedMimeTypes = getSupportedMimeTypes().join(',')
-const maxSizeBytes = props.maxSizeMB * 1024 * 1024
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-}
 
 const handleDragOver = () => {
   isDragging.value = true
@@ -136,19 +128,19 @@ const handleFileSelect = (event: Event) => {
 }
 
 const processFile = async (file: File) => {
-  // Validate file size
-  if (file.size > maxSizeBytes) {
-    const errorMsg = `File is too large. Maximum size is ${props.maxSizeMB}MB`
-    toast.error(errorMsg)
-    emit('error', errorMsg)
+  // Validate file size using validator utility
+  const sizeValidation = validateFileSize(file, props.maxSizeMB)
+  if (!sizeValidation.valid) {
+    toast.error(sizeValidation.error!)
+    emit('error', sizeValidation.error!)
     return
   }
   
-  // Validate file type using our utility
-  if (!isFileSupported(file)) {
-    const errorMsg = 'Unsupported file format. Please use TXT, PDF, DOCX, or MD files.'
-    toast.error(errorMsg)
-    emit('error', errorMsg)
+  // Validate file type using validator utility
+  const typeValidation = validateFileType(file)
+  if (!typeValidation.valid) {
+    toast.error(typeValidation.error!)
+    emit('error', typeValidation.error!)
     return
   }
   

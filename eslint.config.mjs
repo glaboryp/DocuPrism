@@ -11,7 +11,9 @@ export default withNuxt(
       'vue/max-attributes-per-line': 'off',
       'vue/singleline-html-element-content-newline': 'off',
       // Allow single-word component names (useful for Nuxt pages like index.vue, history.vue)
-      'vue/multi-word-component-names': 'off'
+      'vue/multi-word-component-names': 'off',
+      // Allow v-html when using sanitized content (we use formatMarkdown with built-in sanitization)
+      'vue/no-v-html': 'off'
     },
     ignores: [
       // Ignore Tailwind CSS generated files
