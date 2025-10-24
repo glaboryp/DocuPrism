@@ -1,18 +1,21 @@
 <template>
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main" aria-label="Document Analysis">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
       <!-- Input Section -->
-      <div class="space-y-6">
+      <section class="space-y-6" aria-labelledby="input-section-title">
         <div class="card p-6">
-          <h2 class="text-xl font-semibold text-gray-500 dark:text-white mb-4 flex items-center">
-            <Icon name="heroicons:document-plus" class="w-5 h-5 mr-2 text-primary-400" />
+          <h2 id="input-section-title" class="text-xl font-semibold text-gray-500 dark:text-white mb-4 flex items-center">
+            <Icon name="heroicons:document-plus" class="w-5 h-5 mr-2 text-primary-400" aria-hidden="true" />
             Document Input
           </h2>
           
           <!-- Input Mode Tabs -->
-          <div class="flex gap-2 mb-4">
+          <div class="flex gap-2 mb-4" role="tablist" aria-label="Input mode selection">
             <button
+              role="tab"
+              :aria-selected="inputMode === 'text'"
+              :aria-controls="inputMode === 'text' ? 'text-input-panel' : undefined"
               :class="[
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 inputMode === 'text' 
@@ -23,10 +26,13 @@
               :disabled="isCheckingSupport"
               @click="inputMode = 'text'"
             >
-              <Icon name="heroicons:pencil-square" class="w-4 h-4 inline" />
+              <Icon name="heroicons:pencil-square" class="w-4 h-4 inline" aria-hidden="true" />
               Text Input
             </button>
             <button
+              role="tab"
+              :aria-selected="inputMode === 'file'"
+              :aria-controls="inputMode === 'file' ? 'file-upload-panel' : undefined"
               :class="[
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 inputMode === 'file' 
@@ -37,46 +43,62 @@
               :disabled="isCheckingSupport"
               @click="inputMode = 'file'"
             >
-              <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline" />
+              <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline" aria-hidden="true" />
               File Upload
             </button>
           </div>
           
           <!-- File Upload Mode -->
-          <FileUploader 
+          <div
             v-if="inputMode === 'file'"
-            @file-loaded="handleFileLoaded"
-          />
+            id="file-upload-panel"
+            role="tabpanel"
+            aria-labelledby="file-upload-tab"
+          >
+            <FileUploader @file-loaded="handleFileLoaded" />
+          </div>
           
           <!-- Text Area -->
-          <div v-if="inputMode === 'text'" class="space-y-4">
+          <div
+            v-if="inputMode === 'text'"
+            id="text-input-panel"
+            role="tabpanel"
+            aria-labelledby="text-input-tab"
+            class="space-y-4"
+          >
+            <label for="document-textarea" class="sr-only">Document text input</label>
             <textarea
+              id="document-textarea"
               v-model="inputText"
               class="textarea-field"
               :rows="textareaRows"
               placeholder="Paste your document text here for analysis..."
               :disabled="isLoading || isCheckingSupport"
+              :aria-describedby="inputText.length > 0 ? 'char-counter' : undefined"
             />
             
             <!-- Character Counter -->
-            <div class="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500">
-              <span>{{ inputText.length.toLocaleString() }} characters</span>
-              <span v-if="inputText.length > 10000" class="text-yellow-400">
+            <div id="char-counter" class="flex justify-between items-center text-sm dark:text-gray-400 text-gray-500" aria-live="polite">
+              <span aria-label="Character count">{{ inputText.length.toLocaleString() }} characters</span>
+              <span v-if="inputText.length > 10000" class="text-yellow-400" role="alert">
                 Very long text may take more time to process
               </span>
             </div>
           </div>
           
           <!-- Summarizer Options -->
-          <div class="mt-6 space-y-4">
-            <h3 class="text-lg font-medium dark:text-gray-200 text-gray-400">Summary Options</h3>
+          <fieldset class="mt-6 space-y-4">
+            <legend class="text-lg font-medium dark:text-gray-200 text-gray-400">Summary Options</legend>
             
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Type</label>
+                <label for="summary-type" class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Type</label>
                 <select 
+                  id="summary-type"
                   v-model="summaryOptions.type"
                   class="select-field"
+                  :disabled="isLoading || isCheckingSupport"
+                  aria-label="Summary type"
                 >
                   <option value="tldr">TL;DR</option>
                   <option value="key-points">Key Points</option>
@@ -86,10 +108,13 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Length</label>
+                <label for="summary-length" class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Length</label>
                 <select 
+                  id="summary-length"
                   v-model="summaryOptions.length"
                   class="select-field"
+                  :disabled="isLoading || isCheckingSupport"
+                  aria-label="Summary length"
                 >
                   <option value="short">Short</option>
                   <option value="medium">Medium</option>
@@ -98,61 +123,74 @@
               </div>
             </div>
             
-            <div>
-              <label class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Format</label>
+            <div role="group" aria-labelledby="format-label">
+              <label id="format-label" class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Format</label>
               <div class="flex space-x-4">
-                <label class="flex items-center">
+                <label class="flex items-center cursor-pointer">
                   <input 
+                    id="format-plain"
                     v-model="summaryOptions.format"
                     type="radio" 
                     value="plain-text"
+                    name="summary-format"
+                    :disabled="isLoading || isCheckingSupport"
                     class="text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-500"
                   >
                   <span class="ml-2 dark:text-gray-400 text-gray-700">Plain Text</span>
                 </label>
-                <label class="flex items-center">
+                <label class="flex items-center cursor-pointer">
                   <input 
+                    id="format-markdown"
                     v-model="summaryOptions.format"
                     type="radio" 
                     value="markdown"
+                    name="summary-format"
+                    :disabled="isLoading || isCheckingSupport"
                     class="text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-500"
                   >
                   <span class="ml-2 dark:text-gray-400 text-gray-700">Markdown</span>
                 </label>
               </div>
             </div>
-          </div>
+          </fieldset>
           
           <!-- Action Buttons -->
           <div class="mt-6 flex space-x-4">
             <button
               :disabled="!canSummarize"
+              :aria-busy="isLoading"
+              :aria-label="isLoading ? 'Analyzing document' : 'Summarize document'"
               class="btn-primary flex-1 flex items-center justify-center"
               @click="handleSummarize"
             >
-              <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <Icon v-else name="heroicons:sparkles" class="w-4 h-4" />
+              <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" aria-hidden="true" />
+              <Icon v-else name="heroicons:sparkles" class="w-4 h-4" aria-hidden="true" />
               {{ isLoading ? 'Analyzing...' : 'Summarize' }}
             </button>
             
             <button
               :disabled="isLoading || isCheckingSupport"
+              aria-label="Clear input and summary"
               class="btn-secondary"
               @click="handleClear"
             >
-              <Icon name="heroicons:trash" class="w-4 h-4" />
+              <Icon name="heroicons:trash" class="w-4 h-4" aria-hidden="true" />
               Clear
             </button>
           </div>
         </div>
-      </div>
+      </section>
       
       <!-- Output Section -->
-      <div class="space-y-6">
+      <section class="space-y-6" aria-labelledby="output-section-title">
         <div class="card p-6">
+          <h2 id="output-section-title" class="sr-only">Analysis Results</h2>
           <!-- Output Mode Tabs -->
-          <div class="flex gap-2 mb-4">
+          <div class="flex gap-2 mb-4" role="tablist" aria-label="Output view selection">
             <button
+              role="tab"
+              :aria-selected="outputMode === 'summary'"
+              :aria-controls="outputMode === 'summary' ? 'summary-panel' : undefined"
               :class="[
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 outputMode === 'summary' 
@@ -161,10 +199,13 @@
               ]"
               @click="outputMode = 'summary'"
             >
-              <Icon name="heroicons:light-bulb" class="w-4 h-4 inline" />
+              <Icon name="heroicons:light-bulb" class="w-4 h-4 inline" aria-hidden="true" />
               Summary
             </button>
             <button
+              role="tab"
+              :aria-selected="outputMode === 'chat'"
+              :aria-controls="outputMode === 'chat' ? 'chat-panel' : undefined"
               :class="[
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 outputMode === 'chat' 
@@ -173,26 +214,31 @@
               ]"
               @click="outputMode = 'chat'"
             >
-              <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4 inline" />
+              <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4 inline" aria-hidden="true" />
               Chat
             </button>
           </div>
           
           <!-- Summary Tab Content -->
-          <div v-if="outputMode === 'summary'">
+          <div
+            v-if="outputMode === 'summary'"
+            id="summary-panel"
+            role="tabpanel"
+            aria-labelledby="summary-tab"
+          >
             <!-- Error Display -->
-            <div v-if="error" class="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg">
+            <div v-if="error" role="alert" class="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg">
               <div class="flex items-center">
-                <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-red-400" />
+                <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-red-400" aria-hidden="true" />
                 <span class="text-red-600 dark:text-red-400 font-medium">Error</span>
               </div>
               <p class="text-red-500 dark:text-red-300 mt-1">{{ error }}</p>
             </div>
             
             <!-- Loading State -->
-            <div v-if="isLoading" class="flex items-center justify-center py-12">
+            <div v-if="isLoading" role="status" aria-live="polite" class="flex items-center justify-center py-12">
               <div class="text-center">
-                <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+                <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" aria-hidden="true" />
                 <p class="text-gray-400">Analyzing your document...</p>
                 <p class="text-sm text-gray-500 mt-1">This may take a few moments</p>
               </div>
@@ -200,7 +246,7 @@
             
             <!-- Summary Display -->
             <div v-else-if="summary" class="space-y-4">
-            <div class="bg-white dark:bg-gray-700/50 rounded-lg p-4">
+            <div class="bg-white dark:bg-gray-700/50 rounded-lg p-4" role="article" aria-label="Generated summary">
               <div class="prose prose-invert max-w-none">
                 <!-- eslint-disable-next-line vue/no-v-html -->
                 <div v-if="summaryOptions.format === 'markdown'" class="text-gray-900 dark:text-gray-200" v-html="formattedSummary" />
@@ -232,7 +278,13 @@
           </div>
           
           <!-- Chat Tab Content -->
-          <div v-if="outputMode === 'chat'" class="h-[600px]">
+          <div
+            v-if="outputMode === 'chat'"
+            id="chat-panel"
+            role="tabpanel"
+            aria-labelledby="chat-tab"
+            class="h-[600px]"
+          >
             <ChatInterface 
               :document-text="inputText"
               :has-document="inputText.trim().length > 0"
@@ -241,14 +293,14 @@
         </div>
         
         <!-- AI Status Info -->
-        <div v-if="isSupported" class="card p-4">
+        <aside v-if="isSupported" class="card p-4" aria-label="AI Status Information">
           <h3 class="text-md font-medium text-gray-500 dark:text-gray-300 mb-2">AI Status</h3>
           <div class="text-sm text-gray-400 space-y-1">
-            <div>Status: <span class="text-green-500 dark:text-green-400">Ready</span></div>
+            <div>Status: <span class="text-green-500 dark:text-green-400" role="status">Ready</span></div>
             <div>Model: Gemini Nano (on-device)</div>
           </div>
-        </div>
-      </div>
+        </aside>
+      </section>
     </div>
   </main>
 </template>
@@ -258,6 +310,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
+import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import FileUploader from '../components/FileUploader.vue'
 import ChatInterface from '../components/ChatInterface.vue'
 
@@ -427,4 +480,51 @@ const handleFileLoaded = (
     toast.info(`File "${filename}" loaded. You can now edit or summarize it.`)
   }
 }
+
+// Keyboard shortcuts
+useKeyboardShortcuts([
+  {
+    key: 'Enter',
+    ctrl: true,
+    description: 'Summarize document',
+    handler: () => {
+      if (canSummarize.value) {
+        handleSummarize()
+      }
+    }
+  },
+  {
+    key: 'k',
+    ctrl: true,
+    description: 'Clear content',
+    handler: handleClear
+  },
+  {
+    key: 'c',
+    ctrl: true,
+    shift: true,
+    description: 'Copy summary',
+    handler: () => {
+      if (summary.value) {
+        handleCopy()
+      }
+    }
+  },
+  {
+    key: '1',
+    alt: true,
+    description: 'Switch to Summary tab',
+    handler: () => {
+      outputMode.value = 'summary'
+    }
+  },
+  {
+    key: '2',
+    alt: true,
+    description: 'Switch to Chat tab',
+    handler: () => {
+      outputMode.value = 'chat'
+    }
+  }
+])
 </script>

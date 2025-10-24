@@ -54,14 +54,22 @@ useHead({
 
 <template>
   <div>
+    <!-- Skip to main content link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">
+      Skip to main content
+    </a>
+
     <!-- Loading Overlay during AI checking -->
     <Transition name="fade">
       <div
         v-if="isCheckingSupport"
+        role="status"
+        aria-live="polite"
+        aria-label="Initializing AI"
         class="fixed inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm"
       >
         <div class="text-center">
-          <Icon name="heroicons:arrow-path" class="w-16 h-16 text-primary animate-spin mx-auto mb-4" />
+          <Icon name="heroicons:arrow-path" class="w-16 h-16 text-primary animate-spin mx-auto mb-4" aria-hidden="true" />
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Initializing AI
           </h2>
