@@ -23,7 +23,7 @@
               :disabled="isCheckingSupport"
               @click="inputMode = 'text'"
             >
-              <Icon name="heroicons:pencil-square" class="w-4 h-4 inline mr-2" />
+              <Icon name="heroicons:pencil-square" class="w-4 h-4 inline" />
               Text Input
             </button>
             <button
@@ -37,7 +37,7 @@
               :disabled="isCheckingSupport"
               @click="inputMode = 'file'"
             >
-              <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline mr-2" />
+              <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline" />
               File Upload
             </button>
           </div>
@@ -130,8 +130,8 @@
               class="btn-primary flex-1 flex items-center justify-center"
               @click="handleSummarize"
             >
-              <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 mr-2 animate-spin" />
-              <Icon v-else name="heroicons:sparkles" class="w-4 h-4 mr-2" />
+              <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+              <Icon v-else name="heroicons:sparkles" class="w-4 h-4" />
               {{ isLoading ? 'Analyzing...' : 'Summarize' }}
             </button>
             
@@ -140,7 +140,7 @@
               class="btn-secondary"
               @click="handleClear"
             >
-              <Icon name="heroicons:trash" class="w-4 h-4 mr-2" />
+              <Icon name="heroicons:trash" class="w-4 h-4" />
               Clear
             </button>
           </div>
@@ -150,31 +150,56 @@
       <!-- Output Section -->
       <div class="space-y-6">
         <div class="card p-6">
-          <h2 class="text-xl font-semibold text-gray-500 dark:text-white mb-4 flex items-center">
-            <Icon name="heroicons:light-bulb" class="w-5 h-5 mr-2 text-accent-400" />
-            Summary Results
-          </h2>
-          
-          <!-- Error Display -->
-          <div v-if="error" class="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg">
-            <div class="flex items-center">
-              <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-red-400 mr-2" />
-              <span class="text-red-600 dark:text-red-400 font-medium">Error</span>
-            </div>
-            <p class="text-red-500 dark:text-red-300 mt-1">{{ error }}</p>
+          <!-- Output Mode Tabs -->
+          <div class="flex gap-2 mb-4">
+            <button
+              :class="[
+                'px-4 py-2 rounded-lg font-medium transition-all',
+                outputMode === 'summary' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ]"
+              @click="outputMode = 'summary'"
+            >
+              <Icon name="heroicons:light-bulb" class="w-4 h-4 inline" />
+              Summary
+            </button>
+            <button
+              :class="[
+                'px-4 py-2 rounded-lg font-medium transition-all',
+                outputMode === 'chat' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ]"
+              @click="outputMode = 'chat'"
+            >
+              <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4 inline" />
+              Chat
+            </button>
           </div>
           
-          <!-- Loading State -->
-          <div v-if="isLoading" class="flex items-center justify-center py-12">
-            <div class="text-center">
-              <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
-              <p class="text-gray-400">Analyzing your document...</p>
-              <p class="text-sm text-gray-500 mt-1">This may take a few moments</p>
+          <!-- Summary Tab Content -->
+          <div v-if="outputMode === 'summary'">
+            <!-- Error Display -->
+            <div v-if="error" class="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg">
+              <div class="flex items-center">
+                <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-red-400" />
+                <span class="text-red-600 dark:text-red-400 font-medium">Error</span>
+              </div>
+              <p class="text-red-500 dark:text-red-300 mt-1">{{ error }}</p>
             </div>
-          </div>
-          
-          <!-- Summary Display -->
-          <div v-else-if="summary" class="space-y-4">
+            
+            <!-- Loading State -->
+            <div v-if="isLoading" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+                <p class="text-gray-400">Analyzing your document...</p>
+                <p class="text-sm text-gray-500 mt-1">This may take a few moments</p>
+              </div>
+            </div>
+            
+            <!-- Summary Display -->
+            <div v-else-if="summary" class="space-y-4">
             <div class="bg-white dark:bg-gray-700/50 rounded-lg p-4">
               <div class="prose prose-invert max-w-none">
                 <!-- eslint-disable-next-line vue/no-v-html -->
@@ -204,6 +229,15 @@
               <p class="text-sm text-gray-500 mt-1">Enter text and click "Summarize" to get started</p>
             </div>
           </div>
+          </div>
+          
+          <!-- Chat Tab Content -->
+          <div v-if="outputMode === 'chat'" class="h-[600px]">
+            <ChatInterface 
+              :document-text="inputText"
+              :has-document="inputText.trim().length > 0"
+            />
+          </div>
         </div>
         
         <!-- AI Status Info -->
@@ -225,6 +259,7 @@ import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import FileUploader from '../components/FileUploader.vue'
+import ChatInterface from '../components/ChatInterface.vue'
 
 // Types for summary options
 interface SummaryOptions {
@@ -247,6 +282,7 @@ const toast = useToast()
 const inputText = ref<string>('')
 const summary = ref<string>('')
 const inputMode = ref<'text' | 'file'>('text')
+const outputMode = ref<'summary' | 'chat'>('summary')
 const summaryOptions = ref<SummaryOptions>({
   type: 'tldr',
   format: 'markdown',

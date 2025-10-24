@@ -1,6 +1,9 @@
-import { ref, readonly, onMounted } from 'vue'
+import { ref, readonly } from 'vue'
 import { AI_CONFIG } from '../config/constants'
 import { createAIError, logError } from '../utils/errorHandler'
+
+// Shared state (singleton pattern)
+let sharedInstance: ReturnType<typeof createChromeAI> | null = null
 
 // Chrome AI Types according to official documentation
 interface SummarizerMonitor {
@@ -12,6 +15,7 @@ interface SummarizerCreateOptions {
   type?: 'key-points' | 'tldr' | 'teaser' | 'headline'
   format?: 'markdown' | 'plain-text'
   length?: 'short' | 'medium' | 'long'
+  outputLanguage?: string  // Language code: 'en', 'es', 'ja', etc.
   monitor?: (monitor: SummarizerMonitor) => void
 }
 
@@ -52,7 +56,7 @@ declare global {
   }
 }
 
-export const useChromeAI = () => {
+const createChromeAI = () => {
   const isSupported = ref(false)
   const isLoading = ref(false)
   const error = ref<string>('')
@@ -115,6 +119,18 @@ export const useChromeAI = () => {
       error.value = `Failed to check AI support: ${err instanceof Error ? err.message : 'Unknown error'}`
       return false
     }
+  }
+
+  // Helper function to map detected language to API language code
+  const getLanguageCode = (detectedLanguage: string): string => {
+    const languageCodeMap: Record<string, string> = {
+      'English': 'en',
+      'Spanish': 'es',
+      'Japanese': 'ja',
+      // Add more mappings as Chrome adds support
+    }
+    
+    return languageCodeMap[detectedLanguage] || 'en' // Default to English
   }
 
   // Helper function to detect language using Chrome's Language Detector API
@@ -290,6 +306,7 @@ export const useChromeAI = () => {
 
       // Detect the language of the input text
       const detectedLanguage = await detectLanguage(text)
+      const languageCode = getLanguageCode(detectedLanguage)
       
       // Create language-specific context
       let languageContext = `Please provide the summary in ${detectedLanguage}.`
@@ -320,6 +337,7 @@ export const useChromeAI = () => {
         type: options.type as 'key-points' | 'tldr' | 'teaser' | 'headline',
         format: options.format as 'markdown' | 'plain-text',
         length: options.length as 'short' | 'medium' | 'long',
+        outputLanguage: languageCode,  // Specify output language to avoid warning
         monitor: (monitor) => {
           monitor.addEventListener('downloadprogress', (e) => {
             console.log(`Download progress: ${Math.round(e.loaded * 100)}%`)
@@ -368,8 +386,8 @@ export const useChromeAI = () => {
     }
   }
 
-  // Initialize on client side
-  onMounted(async () => {
+  // Initialize function (to be called manually from component)
+  const initialize = async (): Promise<void> => {
     isCheckingSupport.value = true
     try {
       // Add timeout to prevent hanging
@@ -403,7 +421,7 @@ export const useChromeAI = () => {
     } finally {
       isCheckingSupport.value = false
     }
-  })
+  }
 
   return {
     // Reactive state (readonly for protection)
@@ -414,6 +432,15 @@ export const useChromeAI = () => {
     
     // Methods
     checkSupport,
-    summarizeText
+    summarizeText,
+    initialize
   }
+}
+
+// Singleton wrapper - ensures only one instance exists
+export const useChromeAI = () => {
+  if (!sharedInstance) {
+    sharedInstance = createChromeAI()
+  }
+  return sharedInstance
 }

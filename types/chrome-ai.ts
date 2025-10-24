@@ -37,25 +37,10 @@ export interface AIPromptOptions {
 
 export interface AILanguageModel {
   prompt(input: string, options?: Partial<AIPromptOptions>): Promise<string>;
-  promptStreaming(input: string, options?: Partial<AIPromptOptions>): ReadableStream<string>;
+  promptStreaming(input: string, options?: Partial<AIPromptOptions>): AsyncIterable<string>;
   countPromptTokens(input: string, options?: Partial<AIPromptOptions>): Promise<number>;
   destroy(): void;
 }
 
-// Extended Window interface for Chrome Built-in AI
-declare global {
-  interface Window {
-    ai?: {
-      summarizer?: {
-        capabilities(): Promise<AISummarizerCapabilities>;
-        create(options?: Partial<AISummarizerOptions>): Promise<AISummarizer>;
-      };
-      languageModel?: {
-        capabilities(): Promise<AIPromptCapabilities>;
-        create(options?: Partial<AIPromptOptions>): Promise<AILanguageModel>;
-      };
-    };
-  }
-}
-
+// Note: Window interface extensions are declared in useChromeAI.ts to avoid conflicts
 export {};

@@ -3,7 +3,12 @@ import '../assets/css/main.css'
 import { useChromeAI } from './composables/useChromeAI'
 
 // Get checking state from Chrome AI
-const { isCheckingSupport } = useChromeAI()
+const { isCheckingSupport, initialize } = useChromeAI()
+
+onMounted(async () => {
+  // Initialize Chrome AI (singleton - only runs once)
+  await initialize()
+})
 
 // Meta and head configuration
 useHead({
