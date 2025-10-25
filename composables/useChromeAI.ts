@@ -1,6 +1,7 @@
 import { ref, readonly } from 'vue'
 import { AI_CONFIG } from '../config/constants'
 import { createAIError, logError } from '../utils/errorHandler'
+import { useSummaryCache } from './useSummaryCache'
 
 // Shared state (singleton pattern)
 let sharedInstance: ReturnType<typeof createChromeAI> | null = null
@@ -285,10 +286,20 @@ const createChromeAI = () => {
     return languageMap[languageCode] || 'English'
   }
 
+  // Initialize cache
+  const { getCached, setCached, clearCache, getCacheStats } = useSummaryCache()
+
   // AI Methods using official API
   const summarizeText = async (text: string, options: SummaryOptions): Promise<string> => {
     if (!text.trim()) {
       throw new Error('Please provide text to summarize')
+    }
+
+    // Check cache first
+    const cachedSummary = getCached(text, options)
+    if (cachedSummary) {
+      console.log('✅ Using cached summary')
+      return cachedSummary
     }
 
     isLoading.value = true
@@ -375,6 +386,10 @@ const createChromeAI = () => {
         throw new Error('No summary was generated')
       }
       
+      // Cache the result for future use
+      setCached(text, options, result)
+      console.log('💾 Summary cached for future use')
+      
       return result
     } catch (err) {
       logError(err, { textLength: text.length, options })
@@ -433,7 +448,11 @@ const createChromeAI = () => {
     // Methods
     checkSupport,
     summarizeText,
-    initialize
+    initialize,
+    
+    // Cache methods
+    clearCache,
+    getCacheStats
   }
 }
 

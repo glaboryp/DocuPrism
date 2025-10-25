@@ -291,12 +291,12 @@
             id="chat-panel"
             role="tabpanel"
             aria-labelledby="chat-tab"
-            class="h-[600px]"
           >
             <Suspense>
               <ChatInterface 
                 :document-text="inputText"
                 :has-document="inputText.trim().length > 0"
+                :chat-height="chatHeight"
               />
               <template #fallback>
                 <div class="flex items-center justify-center h-full">
@@ -314,6 +314,10 @@
           <div class="text-sm text-gray-400 space-y-1">
             <div>Status: <span class="text-green-500 dark:text-green-400" role="status">Ready</span></div>
             <div>Model: Gemini Nano (on-device)</div>
+            <div v-if="getCacheStats().size > 0" class="flex items-center gap-1">
+              <Icon name="heroicons:bolt" class="w-3 h-3 text-yellow-500" />
+              Cache: {{ getCacheStats().size }}/{{ getCacheStats().maxSize }} summaries
+            </div>
           </div>
         </aside>
       </section>
@@ -342,7 +346,7 @@ interface SummaryOptions {
 }
 
 // Use Chrome AI composable directly - no props needed
-const { isSupported, isLoading, error, isCheckingSupport, summarizeText } = useChromeAI()
+const { isSupported, isLoading, error, isCheckingSupport, summarizeText, getCacheStats } = useChromeAI()
 
 // Use offline storage composable
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
@@ -396,6 +400,14 @@ const textareaRows = computed(() => {
   return baseRows // Small screens: default 12 rows
 })
 
+// Calculate chat height to match textarea (approximate line height: 1.5rem + padding)
+const chatHeight = computed(() => {
+  const rows = textareaRows.value
+  // Each row is approximately 1.5rem (24px) + extra padding for chat
+  const heightInRem = rows * 1.5 + 8 // +8rem for more space (header, padding, input)
+  return `${heightInRem}rem`
+})
+
 // Update viewport height on mount and resize
 onMounted(() => {
   if (typeof window !== 'undefined') {
@@ -420,12 +432,24 @@ onMounted(() => {
 const handleSummarize = async () => {
   if (!canSummarize.value) return
   
+  // Track if we had cache before the operation
+  const cacheStatsBefore = getCacheStats()
+  const hadCacheBefore = cacheStatsBefore.size
+  
   try {
     const result = await summarizeText(inputText.value, summaryOptions.value)
     summary.value = result
     
-    // Show success notification
-    toast.success('Summary generated successfully!')
+    // Check if cache was used (size didn't increase)
+    const cacheStatsAfter = getCacheStats()
+    const usedCache = cacheStatsAfter.size === hadCacheBefore
+    
+    // Show success notification with cache indicator
+    if (usedCache) {
+      toast.success('✨ Summary retrieved from cache (instant!)')
+    } else {
+      toast.success('Summary generated successfully!')
+    }
     
     // Save analysis offline if storage is available
     if (isStorageAvailable.value && result) {

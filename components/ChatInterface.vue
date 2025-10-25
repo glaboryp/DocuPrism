@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col" :style="isPromptApiAvailable ? { height: chatHeight } : {}">
     <!-- Chat Header -->
     <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
       <div class="flex items-center space-x-2">
@@ -7,7 +7,7 @@
         <h3 class="font-semibold text-gray-900 dark:text-white">Chat with Document</h3>
       </div>
       <button
-        v-if="chatHistory.length > 0"
+        v-if="chatHistory.length > 0 && isPromptApiAvailable"
         class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         @click="handleClearChat"
       >
@@ -15,19 +15,15 @@
       </button>
     </div>
 
-    <!-- Chat Messages -->
-    <div
-      ref="chatContainer"
-      class="flex-1 overflow-y-auto p-4 space-y-4"
-    >
-      <!-- Prompt API Not Available Warning -->
-      <div v-if="!isPromptApiAvailable" class="flex flex-col items-center justify-center h-full text-center p-6">
-        <div class="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg p-6 max-w-md">
+    <!-- Prompt API Not Available Warning (replaces entire chat area) -->
+    <div v-if="!isPromptApiAvailable" class="p-6 flex items-start justify-center">
+      <div class="max-w-2xl w-full">
+        <div class="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg p-6">
           <Icon name="heroicons:exclamation-triangle" class="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          <h4 class="text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-3">
+          <h4 class="text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-3 text-center">
             Prompt API Not Available
           </h4>
-          <p class="text-sm text-yellow-700 dark:text-yellow-400 mb-4">
+          <p class="text-sm text-yellow-700 dark:text-yellow-400 mb-4 text-center">
             The chat feature requires Chrome's Prompt API to be enabled. This API is currently experimental.
           </p>
           <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
@@ -50,103 +46,109 @@
               If it shows <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded">undefined</code>, the flag is not enabled.
             </p>
           </div>
-          <p class="text-xs text-yellow-600 dark:text-yellow-500">
+          <p class="text-xs text-yellow-600 dark:text-yellow-500 text-center">
             <strong>Important:</strong> Regular Chrome does not support this feature yet. You must use Chrome Canary or Dev channel.
           </p>
         </div>
       </div>
-      
-      <!-- Empty State -->
-      <div v-else-if="chatHistory.length === 0" class="flex flex-col items-center justify-center h-full text-center">
-        <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          Start a conversation
-        </h4>
-        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
-          Ask questions about your document and get instant answers powered by AI
-        </p>
-      </div>
+    </div>
 
-      <!-- Messages -->
+    <!-- Chat Content (only shown when API is available) -->
+    <template v-else>
+      <!-- Chat Messages -->
       <div
-        v-for="message in chatHistory"
-        :key="message.id"
-        :class="[
-          'flex',
-          message.role === 'user' ? 'justify-end' : 'justify-start'
-        ]"
+        ref="chatContainer"
+        class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
       >
+        <!-- Empty State -->
+        <div v-if="chatHistory.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+          <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+          <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Start a conversation
+          </h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+            Ask questions about your document and get instant answers powered by AI
+          </p>
+        </div>
+
+        <!-- Messages -->
         <div
+          v-for="message in chatHistory"
+          :key="message.id"
           :class="[
-            'max-w-[80%] rounded-lg px-4 py-2',
-            message.role === 'user'
-              ? 'bg-primary text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+            'flex',
+            message.role === 'user' ? 'justify-end' : 'justify-start'
           ]"
         >
-          <!-- User messages: plain text -->
-          <p v-if="message.role === 'user'" class="text-sm whitespace-pre-wrap">
-            {{ message.content }}
-          </p>
-          <!-- Assistant messages: render markdown (sanitized via formatMarkdown utility) -->
-          <div 
-            v-else 
-            class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
-            v-html="formatMarkdown(message.content)" 
-          />
-          <span class="text-xs opacity-70 mt-1 block">
-            {{ formatTime(message.timestamp) }}
-          </span>
+          <div
+            :class="[
+              'max-w-[80%] rounded-lg px-4 py-2',
+              message.role === 'user'
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+            ]"
+          >
+            <!-- User messages: plain text -->
+            <p v-if="message.role === 'user'" class="text-sm whitespace-pre-wrap">
+              {{ message.content }}
+            </p>
+            <!-- Assistant messages: render markdown (sanitized via formatMarkdown utility) -->
+            <div 
+              v-else 
+              class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
+              v-html="formatMarkdown(message.content)" 
+            />
+            <span class="text-xs opacity-70 mt-1 block">
+              {{ formatTime(message.timestamp) }}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <!-- Loading indicator -->
-      <div v-if="isLoading" class="flex justify-start">
-        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-          <div class="flex items-center space-x-2">
-            <Icon name="heroicons:arrow-path" class="w-4 h-4 text-gray-500 animate-spin" />
-            <span class="text-sm text-gray-500 dark:text-gray-400">Thinking...</span>
+        <!-- Loading indicator -->
+        <div v-if="isLoading" class="flex justify-start">
+          <div class="bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
+            <div class="flex items-center space-x-2">
+              <Icon name="heroicons:arrow-path" class="w-4 h-4 text-gray-500 animate-spin" />
+              <span class="text-sm text-gray-500 dark:text-gray-400">Thinking...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streaming message (sanitized via formatMarkdown utility) -->
+        <div v-if="streamingMessage" class="flex justify-start">
+          <div class="max-w-[80%] bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
+            <div 
+              class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 text-gray-900 dark:text-white"
+              v-html="formatMarkdown(streamingMessage)" 
+            />
           </div>
         </div>
       </div>
 
-      <!-- Streaming message (sanitized via formatMarkdown utility) -->
-      <div v-if="streamingMessage" class="flex justify-start">
-        <div class="max-w-[80%] bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-          <div 
-            class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 text-gray-900 dark:text-white"
-            v-html="formatMarkdown(streamingMessage)" 
-          />
-        </div>
+      <!-- Chat Input -->
+      <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+        <form class="flex space-x-2" @submit.prevent="handleSendMessage">
+          <input
+            v-model="inputMessage"
+            type="text"
+            placeholder="Ask a question about your document..."
+            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+            :disabled="isLoading || !hasDocument"
+          >
+          <button
+            type="submit"
+            class="btn-primary px-4 py-2"
+            :disabled="!inputMessage.trim() || isLoading || !hasDocument"
+          >
+            <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-5 h-5 animate-spin" />
+            <Icon v-else name="heroicons:paper-airplane" class="w-5 h-5" />
+          </button>
+        </form>
+        <p v-if="!hasDocument" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Please enter or upload a document first to start chatting
+        </p>
       </div>
-    </div>
-
-    <!-- Chat Input -->
-    <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-      <form class="flex space-x-2" @submit.prevent="handleSendMessage">
-        <input
-          v-model="inputMessage"
-          type="text"
-          placeholder="Ask a question about your document..."
-          class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
-          :disabled="isLoading || !hasDocument || !isPromptApiAvailable"
-        >
-        <button
-          type="submit"
-          class="btn-primary px-4 py-2"
-          :disabled="!inputMessage.trim() || isLoading || !hasDocument || !isPromptApiAvailable"
-        >
-          <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-5 h-5 animate-spin" />
-          <Icon v-else name="heroicons:paper-airplane" class="w-5 h-5" />
-        </button>
-      </form>
-      <p v-if="!hasDocument && isPromptApiAvailable" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-        Please enter or upload a document first to start chatting
-      </p>
-      <p v-if="!isPromptApiAvailable" class="text-xs text-yellow-600 dark:text-yellow-500 mt-2">
-        Prompt API is not available. Please enable it in Chrome flags.
-      </p>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -159,6 +161,7 @@ import { useToast } from '../composables/useToast'
 interface Props {
   documentText: string
   hasDocument: boolean
+  chatHeight?: string
 }
 
 const props = defineProps<Props>()
