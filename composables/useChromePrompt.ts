@@ -176,11 +176,12 @@ ${documentContext.value}
 
 Question: ${message}
 
-Instructions:
-- Answer the question based ONLY on the information in the document above
-- If the answer is not in the document, say so clearly
-- IMPORTANT: Respond in the SAME LANGUAGE as the question
-- Keep your answer concise and accurate`
+CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE:
+1. Answer the question based ONLY on the information in the document above
+2. If the answer is not in the document, say so clearly
+3. **RESPOND IN THE EXACT SAME LANGUAGE AS THE QUESTION** - If the question is in English, respond in English. If it's in Spanish, respond in Spanish. Match the language of the question precisely.
+4. Keep your answer concise and accurate
+5. Do not translate the question or change languages - maintain the same language throughout your response`
         : message
       
       // Get streaming response with context included
