@@ -4,6 +4,18 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt'],
   
+  // Enable SSG (Static Site Generation) for true offline-first PWA
+  ssr: false,
+  
+  // Nitro configuration for static generation
+  nitro: {
+    preset: 'static',
+    prerender: {
+      crawlLinks: true,
+      routes: ['/']
+    }
+  },
+  
   // PWA Configuration
   pwa: {
     registerType: 'autoUpdate',
@@ -130,6 +142,8 @@ export default defineNuxtConfig({
       type: 'module',
       suppressWarnings: true
     },
+    injectRegister: 'auto',
+    strategies: 'generateSW',
     manifest: {
       name: 'DocuPrism - Document Analysis',
       short_name: 'DocuPrism',
