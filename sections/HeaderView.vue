@@ -69,25 +69,25 @@
             title="Click to learn how to enable Chrome AI"
             @click="showModal = true"
           >
-            <Icon name="heroicons:exclamation-triangle" class="w-3 h-3 sm:w-4 sm:h-4" />
-            <span class="hidden sm:inline">AI Not Supported</span>
+            <Icon name="heroicons:exclamation-triangle" class="w-4 h-4" />
+            <span class="inline">AI Not Supported</span>
           </button>
           <div
             v-else-if="isSupported" 
             class="status-badge success">
-            <Icon name="heroicons:check-circle" class="w-3 h-3 sm:w-4 sm:h-4" />
-            <span class="hidden sm:inline">AI Ready</span>
+            <Icon name="heroicons:check-circle" class="w-4 h-4" />
+            <span class="inline">AI Ready</span>
           </div>
           <div
             v-else 
             class="status-badge warning">
-            <Icon name="heroicons:clock" class="w-3 h-3 sm:w-4 sm:h-4" />
-            <span class="hidden sm:inline">Checking...</span>
+            <Icon name="heroicons:clock" class="w-4 h-4" />
+            <span class="inline">Checking...</span>
           </div>
           
           <!-- Mobile Menu Button (shown only on mobile) -->
           <button
-            class="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm border border-gray-200 dark:border-gray-600 lg:hidden"
+            class="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm border border-gray-200 dark:border-gray-600 lg:hidden"
             aria-label="Open menu"
             @click="$emit('toggle-mobile-menu')"
           >
