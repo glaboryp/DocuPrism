@@ -20,8 +20,9 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     workbox: {
-      navigateFallback: '/',
-      navigateFallbackDenylist: [/^\/api\//, /^\/admin\//],
+      navigateFallback: '/index.html',
+      navigateFallbackAllowlist: [/^(?!\/__).*$/],
+      navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff|woff2|ttf|eot)$/],
       // Aggressive configuration for true offline-first
       globPatterns: [
         '**/*.{js,css,html}',
@@ -42,32 +43,19 @@ export default defineNuxtConfig({
         '': '/'
       },
       runtimeCaching: [
-        // Main page cache - CRUCIAL for offline-first
+        // HTML documents - CacheFirst for offline reload support
         {
-          urlPattern: /^https:\/\/localhost:\d+\/$/,
-          handler: 'NetworkFirst',
+          urlPattern: ({ request }) => request.destination === 'document',
+          handler: 'CacheFirst',
           options: {
-            cacheName: 'main-page-cache',
+            cacheName: 'html-cache',
             expiration: {
-              maxEntries: 5,
-              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 semana
-            },
-            networkTimeoutSeconds: 3
-          }
-        },
-        // Cache for any app domain
-        {
-          urlPattern: ({ request, url }) => {
-            return request.destination === 'document' && url.pathname === '/'
-          },
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'main-page-cache',
-            expiration: {
-              maxEntries: 5,
+              maxEntries: 10,
               maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
             },
-            networkTimeoutSeconds: 3
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
           }
         },
         // Nuxt assets - Cache First for maximum offline performance
