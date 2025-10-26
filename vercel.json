@@ -1,16 +1,4 @@
 {
-  "buildCommand": "pnpm run generate",
-  "outputDirectory": ".output/public",
-  "framework": null,
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -22,24 +10,6 @@
         {
           "key": "Service-Worker-Allowed",
           "value": "/"
-        }
-      ]
-    },
-    {
-      "source": "/workbox-*.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/(.*).html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },

@@ -109,10 +109,6 @@ export default defineNuxtConfig({
     },
     injectRegister: 'auto',
     strategies: 'generateSW',
-    includeAssets: ['icon.png'],
-    injectManifest: {
-      globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,eot}']
-    },
     manifest: {
       name: 'DocuPrism - Document Analysis',
       short_name: 'DocuPrism',
