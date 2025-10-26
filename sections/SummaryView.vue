@@ -1,23 +1,23 @@
 <template>
-  <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main" aria-label="Document Analysis">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <main id="main-content" class="max-w-7xl mx-auto px-3 sm:px-4 sm:px-6 lg:px-8 py-4 sm:py-8" role="main" aria-label="Document Analysis">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
       
       <!-- Input Section -->
-      <section class="space-y-6" aria-labelledby="input-section-title">
-        <div class="card p-6">
-          <h2 id="input-section-title" class="text-xl font-semibold text-gray-500 dark:text-white mb-4 flex items-center">
-            <Icon name="heroicons:document-plus" class="w-5 h-5 mr-2 text-primary-400" aria-hidden="true" />
+      <section class="space-y-4 sm:space-y-6" aria-labelledby="input-section-title">
+        <div class="card p-4 sm:p-6">
+          <h2 id="input-section-title" class="text-lg sm:text-xl font-semibold text-gray-500 dark:text-white mb-3 sm:mb-4 flex items-center">
+            <Icon name="heroicons:document-plus" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary-400" aria-hidden="true" />
             Document Input
           </h2>
           
           <!-- Input Mode Tabs -->
-          <div class="flex gap-2 mb-4" role="tablist" aria-label="Input mode selection">
+          <div class="flex gap-2 mb-3 sm:mb-4" role="tablist" aria-label="Input mode selection">
             <button
               role="tab"
               :aria-selected="inputMode === 'text'"
               :aria-controls="inputMode === 'text' ? 'text-input-panel' : undefined"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-all',
+                'px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all flex-1 sm:flex-none',
                 inputMode === 'text' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600',
@@ -26,15 +26,15 @@
               :disabled="isCheckingSupport"
               @click="inputMode = 'text'"
             >
-              <Icon name="heroicons:pencil-square" class="w-4 h-4 inline" aria-hidden="true" />
-              Text Input
+              <Icon name="heroicons:pencil-square" class="w-3 h-3 sm:w-4 sm:h-4 inline" aria-hidden="true" />
+              <span class="ml-1 sm:ml-0">Text</span>
             </button>
             <button
               role="tab"
               :aria-selected="inputMode === 'file'"
               :aria-controls="inputMode === 'file' ? 'file-upload-panel' : undefined"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-all',
+                'px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all flex-1 sm:flex-none',
                 inputMode === 'file' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600',
@@ -43,8 +43,8 @@
               :disabled="isCheckingSupport"
               @click="inputMode = 'file'"
             >
-              <Icon name="heroicons:document-arrow-up" class="w-4 h-4 inline" aria-hidden="true" />
-              File Upload
+              <Icon name="heroicons:document-arrow-up" class="w-3 h-3 sm:w-4 sm:h-4 inline" aria-hidden="true" />
+              <span class="ml-1 sm:ml-0">File</span>
             </button>
           </div>
           
@@ -95,10 +95,10 @@
           </div>
           
           <!-- Summarizer Options -->
-          <fieldset class="mt-6 space-y-4">
-            <legend class="text-lg font-medium dark:text-gray-200 text-gray-400">Summary Options</legend>
+          <fieldset class="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
+            <legend class="text-base sm:text-lg font-medium dark:text-gray-200 text-gray-400">Summary Options</legend>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label for="summary-type" class="block text-sm font-medium dark:text-gray-300 text-gray-400 mb-2">Type</label>
                 <select 
@@ -163,26 +163,26 @@
           </fieldset>
           
           <!-- Action Buttons -->
-          <div class="mt-6 flex space-x-4">
+          <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               :disabled="!canSummarize"
               :aria-busy="isLoading"
               :aria-label="isLoading ? 'Analyzing document' : 'Summarize document'"
-              class="btn-primary flex-1 flex items-center justify-center"
+              class="btn-primary flex-1 flex items-center justify-center text-sm sm:text-base"
               @click="handleSummarize"
             >
-              <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" aria-hidden="true" />
-              <Icon v-else name="heroicons:sparkles" class="w-4 h-4" aria-hidden="true" />
+              <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
+              <Icon v-else name="heroicons:sparkles" class="w-4 h-4 mr-2" aria-hidden="true" />
               {{ isLoading ? 'Analyzing...' : 'Summarize' }}
             </button>
             
             <button
               :disabled="isLoading || isCheckingSupport"
               aria-label="Clear input and summary"
-              class="btn-secondary"
+              class="btn-secondary flex items-center justify-center text-sm sm:text-base"
               @click="handleClear"
             >
-              <Icon name="heroicons:trash" class="w-4 h-4" aria-hidden="true" />
+              <Icon name="heroicons:trash" class="w-4 h-4 mr-2" aria-hidden="true" />
               Clear
             </button>
           </div>
@@ -190,40 +190,40 @@
       </section>
       
       <!-- Output Section -->
-      <section class="space-y-6" aria-labelledby="output-section-title">
-        <div class="card p-6">
+      <section class="space-y-4 sm:space-y-6" aria-labelledby="output-section-title">
+        <div class="card p-4 sm:p-6">
           <h2 id="output-section-title" class="sr-only">Analysis Results</h2>
           <!-- Output Mode Tabs -->
-          <div class="flex gap-2 mb-4" role="tablist" aria-label="Output view selection">
+          <div class="flex gap-2 mb-3 sm:mb-4" role="tablist" aria-label="Output view selection">
             <button
               role="tab"
               :aria-selected="outputMode === 'summary'"
               :aria-controls="outputMode === 'summary' ? 'summary-panel' : undefined"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-all',
+                'px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all flex-1',
                 outputMode === 'summary' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               ]"
               @click="outputMode = 'summary'"
             >
-              <Icon name="heroicons:light-bulb" class="w-4 h-4 inline" aria-hidden="true" />
-              Summary
+              <Icon name="heroicons:light-bulb" class="w-3 h-3 sm:w-4 sm:h-4 inline" aria-hidden="true" />
+              <span class="ml-1">Summary</span>
             </button>
             <button
               role="tab"
               :aria-selected="outputMode === 'chat'"
               :aria-controls="outputMode === 'chat' ? 'chat-panel' : undefined"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-all',
+                'px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all flex-1',
                 outputMode === 'chat' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               ]"
               @click="outputMode = 'chat'"
             >
-              <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4 inline" aria-hidden="true" />
-              Chat
+              <Icon name="heroicons:chat-bubble-left-right" class="w-3 h-3 sm:w-4 sm:h-4 inline" aria-hidden="true" />
+              <span class="ml-1">Chat</span>
             </button>
           </div>
           
@@ -309,7 +309,7 @@
         </div>
         
         <!-- AI Status Info -->
-        <aside v-if="isSupported" class="card p-4" aria-label="AI Status Information">
+        <aside v-if="isSupported" class="card p-3 sm:p-4" aria-label="AI Status Information">
           <h3 class="text-md font-medium text-gray-500 dark:text-gray-300 mb-2">AI Status</h3>
           <div class="text-sm text-gray-400 space-y-1">
             <div>Status: <span class="text-green-500 dark:text-green-400" role="status">Ready</span></div>

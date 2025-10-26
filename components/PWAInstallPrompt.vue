@@ -3,28 +3,28 @@
     <!-- Install Prompt -->
     <div 
       v-if="showInstallPrompt && canInstall" 
-      class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 z-50"
+      class="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:right-4 md:w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 sm:p-4 z-50"
     >
-      <div class="flex items-start space-x-3">
+      <div class="flex items-start space-x-2 sm:space-x-3">
         <div class="flex-shrink-0">
-          <Icon name="heroicons:arrow-down-tray" class="w-6 h-6 text-primary" />
+          <Icon name="heroicons:arrow-down-tray" class="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
         </div>
         <div class="flex-1">
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+          <h3 class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
             Install DocuPrism
           </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
             Install the app for faster access and offline capabilities
           </p>
-          <div class="flex space-x-2 mt-3">
+          <div class="flex space-x-2 mt-2 sm:mt-3">
             <button
-              class="btn-primary text-sm px-3 py-1"
+              class="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1"
               @click="installPWA"
             >
               Install
             </button>
             <button
-              class="btn-secondary text-sm px-3 py-1"
+              class="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1"
               @click="dismissInstallPrompt"
             >
               Not now
@@ -35,7 +35,7 @@
           class="flex-shrink-0 text-gray-400 hover:text-gray-500"
           @click="dismissInstallPrompt"
         >
-          <Icon name="heroicons:x-mark" class="w-5 h-5" />
+          <Icon name="heroicons:x-mark" class="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
     </div>

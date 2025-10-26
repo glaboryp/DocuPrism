@@ -3,7 +3,7 @@
     <!-- File Drop Zone -->
     <div
       :class="[
-        'border-2 border-dashed rounded-lg p-8 transition-all duration-200',
+        'border-2 border-dashed rounded-lg p-6 sm:p-8 transition-all duration-200',
         isDragging 
           ? 'border-primary bg-primary/10 dark:bg-primary/20' 
           : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'
@@ -16,17 +16,17 @@
         <Icon 
           :name="isDragging ? 'heroicons:arrow-down-tray' : 'heroicons:document-arrow-up'" 
           :class="[
-            'w-12 h-12 mx-auto mb-4',
+            'w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4',
             isDragging ? 'text-primary animate-bounce' : 'text-gray-400'
           ]" 
         />
-        <p class="text-gray-700 dark:text-gray-300 font-medium mb-2">
+        <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 font-medium mb-2">
           {{ isDragging ? 'Drop your file here' : 'Drag and drop a file here' }}
         </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
           or
         </p>
-        <label class="btn-primary inline-flex items-center cursor-pointer">
+        <label class="btn-primary inline-flex items-center cursor-pointer text-sm sm:text-base">
           <Icon name="heroicons:folder-open" class="w-4 h-4 mr-2" />
           Browse Files
           <input
@@ -50,7 +50,7 @@
     </div>
     
     <!-- File Info -->
-    <div v-if="selectedFile && !isLoading" class="card p-4">
+    <div v-if="selectedFile && !isLoading" class="card p-3 sm:p-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <Icon name="heroicons:document-text" class="w-8 h-8 text-primary" />
