@@ -141,9 +141,9 @@ Check out our [GitHub Issues](https://github.com/glaboryp/DocuPrism/issues) for:
 ## Questions?
 
 Feel free to:
+* Review the README.md
 * Open an issue with your question
 * Check existing issues and discussions
-* Review the README.md
 
 ## Recognition
 
