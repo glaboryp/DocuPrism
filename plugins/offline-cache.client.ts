@@ -73,31 +73,30 @@ export default defineNuxtPlugin(() => {
     window.addEventListener('offline', updateOnlineStatus)
   }
 
-  // Additional cache using the Cache API directly
+  // Additional cache using the Cache API directly - DISABLED
+  // The Workbox precache is handling this now
   const cacheEssentialResources = async () => {
     if ('caches' in window) {
       try {
-        const cache = await caches.open('docuprism-essential-v1')
+        // Just verify that the precache exists
+        const cacheNames = await caches.keys()
+        const workboxCache = cacheNames.find(name => name.includes('workbox-precache'))
         
-        // Essential resources that ALWAYS should be available offline
-        const essentialResources = [
-          '/',
-          '/icon.png',
-        ]
-
-        // Only cache if not already cached
-        for (const resource of essentialResources) {
-          const cachedResponse = await cache.match(resource)
-          if (!cachedResponse) {
-            try {
-              await cache.add(resource)
-            } catch (error) {
-              console.debug(`Could not cache ${resource}:`, error)
-            }
-          }
+        if (workboxCache) {
+          const cache = await caches.open(workboxCache)
+          const cachedUrls = await cache.keys()
+          console.log('Workbox precache contains:', cachedUrls.length, 'resources')
+          
+          // Check if root is cached
+          const rootCached = cachedUrls.some(req => 
+            req.url.includes('/?__WB_REVISION__') || req.url.endsWith('/')
+          )
+          console.log('Root page cached:', rootCached)
+        } else {
+          console.warn('Workbox precache not found')
         }
       } catch (error) {
-        console.debug('Essential cache failed:', error)
+        console.debug('Cache verification failed:', error)
       }
     }
   }

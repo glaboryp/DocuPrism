@@ -4,10 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt'],
   
-  // Enable SSG (Static Site Generation) for true offline-first PWA
-  ssr: false,
-  
-  // Nitro configuration for static generation
+  // Nitro configuration for static generation with SSR
   nitro: {
     preset: 'static',
     prerender: {
@@ -20,15 +17,14 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     workbox: {
-      navigateFallback: '/index.html',
-      navigateFallbackAllowlist: [/^(?!\/__).*$/],
-      navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff|woff2|ttf|eot)$/],
+      navigateFallback: '/',
+      navigateFallbackAllowlist: [/.*/],
+      navigateFallbackDenylist: [],
       // Aggressive configuration for true offline-first
       globPatterns: [
-        '**/*.{js,css,html}',
-        '**/*.{png,jpg,jpeg,gif,svg,ico,webp}',
-        '**/*.{woff,woff2,ttf,eot}'
+        '**/*.{js,css,html,ico,png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,eot}'
       ],
+      globDirectory: '.output/public',
       globIgnores: [
         '**/node_modules/**/*',
         'sw.js',
@@ -38,26 +34,7 @@ export default defineNuxtConfig({
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       skipWaiting: true,
-      // More aggressive precache
-      modifyURLPrefix: {
-        '': '/'
-      },
       runtimeCaching: [
-        // HTML documents - CacheFirst for offline reload support
-        {
-          urlPattern: ({ request }) => request.destination === 'document',
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'html-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
-            },
-            cacheableResponse: {
-              statuses: [0, 200]
-            }
-          }
-        },
         // Nuxt assets - Cache First for maximum offline performance
         {
           urlPattern: /\/_nuxt\/.*/,
@@ -132,6 +109,10 @@ export default defineNuxtConfig({
     },
     injectRegister: 'auto',
     strategies: 'generateSW',
+    includeAssets: ['icon.png'],
+    injectManifest: {
+      globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,gif,webp,woff,woff2,ttf,eot}']
+    },
     manifest: {
       name: 'DocuPrism - Document Analysis',
       short_name: 'DocuPrism',
