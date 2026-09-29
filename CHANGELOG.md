@@ -5,6 +5,15 @@ All notable changes to DocuPrism will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- Updated dependencies within their current major versions (Nuxt 4.5.2, Vue 3.5.43,
+  Vue Router 4.6.4, and transitive packages), reducing `pnpm audit` findings from 171
+  to 12. Remaining findings need major upgrades; see
+  [`docs/dependency-health-2026-09.md`](docs/dependency-health-2026-09.md).
+- Pinned `pdfjs-dist` to `~5.5.207` to avoid GHSA-hq66-cqwq-w95j (fixed only in 6.x).
+
 ## [1.2.0] - 2025-10-24
 
 ### Added
