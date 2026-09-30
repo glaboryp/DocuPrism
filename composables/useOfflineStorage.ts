@@ -62,7 +62,7 @@ export const useOfflineStorage = () => {
       return id
     } catch (error) {
       console.error('Failed to save analysis:', error)
-      throw new Error('Failed to save analysis offline')
+      throw new Error('Failed to save analysis offline', { cause: error })
     }
   }
 

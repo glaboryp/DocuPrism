@@ -5,6 +5,21 @@ All notable changes to DocuPrism will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- Updated dependencies, including major upgrades (Nuxt 4.5.2, Vue Router 5.3.1, ESLint 10,
+  Vitest 5, jsdom 30, TypeScript 6.0, marked 18, pdfjs-dist 6.3), bringing `pnpm audit`
+  findings from 171 to 0. See
+  [`docs/dependency-health-2026-09.md`](docs/dependency-health-2026-09.md).
+
+### Removed
+- Unused `happy-dom` dev dependency.
+
+### Fixed
+- Resolved unmet peer dependencies (`@vitejs/plugin-vue` 6, `workbox-build`/`workbox-window`
+  7.4.1) and removed the stale `vite.server.hmr` config.
+
 ## [1.2.0] - 2025-10-24
 
 ### Added
