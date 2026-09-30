@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Security
-- Updated dependencies within their current major versions (Nuxt 4.5.2, Vue 3.5.43,
-  Vue Router 5.3.1, ESLint 10, and transitive packages), reducing `pnpm audit` findings
-  from 171 to 10. Remaining findings need major upgrades; see
+- Updated dependencies, including major upgrades (Nuxt 4.5.2, Vue Router 5.3.1, ESLint 10,
+  Vitest 5, jsdom 30, TypeScript 6.0, marked 18, pdfjs-dist 6.3), bringing `pnpm audit`
+  findings from 171 to 0. See
   [`docs/dependency-health-2026-09.md`](docs/dependency-health-2026-09.md).
-- Pinned `pdfjs-dist` to `~5.5.207` to avoid GHSA-hq66-cqwq-w95j (fixed only in 6.x).
+
+### Removed
+- Unused `happy-dom` dev dependency.
 
 ### Fixed
 - Resolved unmet peer dependencies (`@vitejs/plugin-vue` 6, `workbox-build`/`workbox-window`
