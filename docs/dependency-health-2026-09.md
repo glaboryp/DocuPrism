@@ -46,7 +46,7 @@ Transitive dependencies were refreshed inside their existing semver ranges with
 | `marked` | 16.4.2 | 18.0.14 |
 | `pdfjs-dist` | ~5.5.207 | ~6.3.289 |
 | `typescript` | 5.9.3 | ~6.0.3 |
-| `@types/node` | 22.20.4 | 26.6.3 |
+| `@types/node` | 22.20.4 | ^24.19.0 (matches Vercel's max Node 24) |
 | `@vitejs/plugin-vue` | 5.2.4 | 6.0.9 |
 | `happy-dom` | 15.11.7 | removed (unused; `jsdom` is the test environment) |
 
@@ -54,8 +54,7 @@ Transitive dependencies were refreshed inside their existing semver ranges with
   GHSA-hq66-cqwq-w95j; 6.3.x is outside that range, so the pin moved to `~6.3.289`.
 - `typescript` stays on 6.0.x: TypeScript 7 fails the `typescript-eslint` peer range
   (`<6.1.0`), so `~6.0.3` is used until typescript-eslint supports it.
-- `@types/node` 26 is ahead of the Node runtime used here (v24); lower it if the
-  deployment target requires matching types.
+- `@types/node` stays on 24.x because Vercel's newest supported Node version is 24.
 - `pnpm.overrides` pins `happy-dom` to `^20.14.5`: pnpm still resolves it as an
   optional peer of `vitest`, and the override keeps that unused copy on a patched version.
 
