@@ -23,11 +23,11 @@ Direct dependencies (same major):
 |---|---|---|
 | `nuxt` | 4.1.2 | 4.5.2 |
 | `vue` | 3.5.21 | 3.5.43 |
-| `vue-router` | 4.5.1 | 4.6.4 (stays on 4.x) |
+| `vue-router` | 4.5.1 | 5.3.1 (required by Nuxt 4.5 `^5.2`) |
 | `@nuxt/eslint` | 1.9.0 | 1.17.0 |
 | `@nuxt/icon` | 2.0.0 | 2.5.1 |
 | `@vite-pwa/nuxt` | 1.0.4 | 1.1.1 |
-| `eslint` | 9.36.0 | 9.39.5 |
+| `eslint` | 9.36.0 | 10.11.0 (required by `@nuxt/eslint-config` 1.17 deps) |
 | `mammoth` | ^1.11.0 | ^1.13.0 |
 | `marked` | ^16.4.1 | ^16.4.2 |
 | `@playwright/test` | ^1.48.0 (1.56.1) | ^1.63.0 (stays on 1.x) |
@@ -59,7 +59,6 @@ All are in dev/test tooling except the `serialize-javascript` build-time path.
 | `vite` 5.4.21 | moderate | GHSA-4w7w-66w2-5vf9, GHSA-v6wh-96g9-6wx3 | >=6.4.2 / >=6.4.3 | `vitest > vite` | Vitest major |
 | `esbuild` 0.21.5 | moderate | GHSA-67mh-4wv8-2f99 | >=0.25.0 | `vitest > vite > esbuild` | Vitest major (via Vite 5) |
 | `happy-dom` 15.11.7 | critical, high ×2 | GHSA-37j7-fg3j-429f, GHSA-w4gp-fjgq-3q4g, GHSA-6q6h-j7hj-3r64 | >=20.8.9 | `happy-dom` (direct dev) | happy-dom 15 → 20 |
-| `serialize-javascript` 6.0.2 | high, moderate | GHSA-5c6j-r48x-rmvq, GHSA-qj8w-gfj5-8c6v | >=7.0.5 | `@vite-pwa/nuxt > vite-plugin-pwa > workbox-build > @rollup/plugin-terser` | `workbox-build@7` pins `@rollup/plugin-terser@^0.4`; needs an upstream release |
 
 Notes:
 
@@ -69,22 +68,24 @@ Notes:
 - The `vitest`/`vite`/`esbuild`/`@vitest/mocker` group is dev-only and never ships
   in the production bundle. `esbuild`/`vite` dev-server issues only matter when a
   dev server is exposed to untrusted networks.
-- `serialize-javascript` is reached only during the PWA service-worker build
-  (`workbox-build`), not at runtime. The Nitro copy (`nitropack > @rollup/plugin-terser`)
-  is already at 7.1.2.
+- `workbox-build` and `workbox-window` are pinned to 7.4.1 as direct dev dependencies
+  to satisfy the `vite-plugin-pwa` peer range; this also removed the
+  `serialize-javascript` advisories.
+- Remaining unmet peer: `cac@^6.7.14` (found 7.0.0) under `nuxt > @nuxt/cli > @bomb.sh/tab`;
+  upstream, resolved by a future Nuxt release.
 
 ## Explicitly not upgraded
 
-Vitest 2 → 5, Playwright 1 → 2, TypeScript 5 → 7, Vue Router 4 → 5, and other majors
-reported by `pnpm outdated` (`eslint` 10, `marked` 18, `pdfjs-dist` 6, `jsdom` 30,
-`happy-dom` 20, `@vitejs/plugin-vue` 6, `@types/node` 26).
+Vitest 2 → 5, Playwright 1 → 2, TypeScript 5 → 7, and other majors
+reported by `pnpm outdated` (`marked` 18, `pdfjs-dist` 6, `jsdom` 30,
+`happy-dom` 20, `@types/node` 26).
 
 ## Verification
 
 Run on Node v24.5.0, pnpm 10.17.0:
 
 - `pnpm install --frozen-lockfile` – exit 0
-- `pnpm audit` – 12 vulnerabilities (see above); exit 1 is expected until majors are taken
+- `pnpm audit` – 10 vulnerabilities (see above); exit 1 is expected until majors are taken
 - `pnpm exec vitest run` – 4 files, 29 tests passed (baseline before changes: 29/29)
 - `CI=1 pnpm exec playwright test --reporter=list` – 4 passed. The first run after
   the `pdfjs-dist` pin reported 1 flaky test (`should load home page`, `ERR_ABORTED`

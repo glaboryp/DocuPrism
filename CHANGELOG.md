@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Updated dependencies within their current major versions (Nuxt 4.5.2, Vue 3.5.43,
-  Vue Router 4.6.4, and transitive packages), reducing `pnpm audit` findings from 171
-  to 12. Remaining findings need major upgrades; see
+  Vue Router 5.3.1, ESLint 10, and transitive packages), reducing `pnpm audit` findings
+  from 171 to 10. Remaining findings need major upgrades; see
   [`docs/dependency-health-2026-09.md`](docs/dependency-health-2026-09.md).
 - Pinned `pdfjs-dist` to `~5.5.207` to avoid GHSA-hq66-cqwq-w95j (fixed only in 6.x).
+
+### Fixed
+- Resolved unmet peer dependencies (`@vitejs/plugin-vue` 6, `workbox-build`/`workbox-window`
+  7.4.1) and removed the stale `vite.server.hmr` config.
 
 ## [1.2.0] - 2025-10-24
 
