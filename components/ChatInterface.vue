@@ -23,32 +23,38 @@
           <h4 class="text-base sm:text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-2 sm:mb-3 text-center">
             Prompt API Not Available
           </h4>
+          <p v-if="!isChrome" class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 text-center">
+            The chat feature uses Chrome's on-device AI (Gemini Nano), which isn't available in this browser.
+            Open this page in <strong>Google Chrome 138 or newer</strong> on desktop to use it.
+          </p>
+          <template v-else>
           <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
             The chat feature requires Chrome's Prompt API to be enabled. This API is currently experimental.
           </p>
           <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
             <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To enable it:</p>
             <ol class="text-xs text-gray-700 dark:text-gray-300 space-y-1.5 sm:space-y-2 list-decimal list-inside">
-              <li>Use <strong>Chrome Canary</strong> or <strong>Chrome Dev</strong> (not regular Chrome)</li>
+              <li>Use <strong>Chrome 138 or newer</strong> on desktop</li>
               <li>Open <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">chrome://flags</code></li>
-              <li>Search for <strong>"Prompt API for Gemini Nano"</strong></li>
-              <li>Set it to <strong>Enabled</strong></li>
-              <li><strong>Restart Chrome completely</strong></li>
-              <li>Verify in console: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">window.ai</code> should not be undefined</li>
+              <li>Set <strong>"Prompt API for Gemini Nano"</strong> to <strong>Enabled</strong></li>
+              <li>Set <strong>"Enables optimization guide on device"</strong> to <strong>Enabled BypassPerfRequirement</strong></li>
+              <li><strong>Relaunch Chrome completely</strong></li>
+              <li>Verify in console: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">await LanguageModel.availability()</code> should return <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">available</code> or <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">downloadable</code></li>
             </ol>
           </div>
           <div class="text-left bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
             <p class="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">Quick Test:</p>
             <p class="text-xs text-blue-700 dark:text-blue-400">
-              Open DevTools Console and type: <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">window.ai</code>
+              Open DevTools Console and type: <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">typeof LanguageModel</code>
             </p>
             <p class="text-xs text-blue-600 dark:text-blue-500 mt-1">
-              If it shows <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">undefined</code>, the flag is not enabled.
+              If it shows <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">"undefined"</code>, the flag is not enabled. You can also check the model download at <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">chrome://on-device-internals</code>.
             </p>
           </div>
           <p class="text-xs text-yellow-600 dark:text-yellow-500 text-center">
-            <strong>Important:</strong> Regular Chrome does not support this feature yet. You must use Chrome Canary or Dev channel.
+            <strong>Note:</strong> The model needs about 22 GB of free disk space and a GPU with more than 4 GB of VRAM (or 16 GB of RAM and 4+ CPU cores).
           </p>
+          </template>
         </div>
       </div>
     </div>
@@ -157,6 +163,7 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import { formatMarkdown } from '../utils/markdownFormatter'
 import { useChromePrompt } from '../composables/useChromePrompt'
 import { useToast } from '../composables/useToast'
+import { isGoogleChrome } from '../utils/browser'
 
 interface Props {
   documentText: string
@@ -181,10 +188,12 @@ const inputMessage = ref('')
 const streamingMessage = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
 const isPromptApiAvailable = ref(false)
+const isChrome = ref(true)
 
 // Check if Prompt API is available on mount (client-side only)
 onMounted(async () => {
   if (typeof window !== 'undefined') {
+    isChrome.value = isGoogleChrome()
     isPromptApiAvailable.value = await checkSupport()
     
     // After checking support, try to create session if we have a document
