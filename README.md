@@ -112,23 +112,21 @@ To run this project on your local machine, please follow these steps:
 
 To use DocuPrism, you need to enable Chrome's Built-in AI features:
 
-1. **Download Chrome Canary or Dev Channel**
-   - [Chrome Canary](https://www.google.com/chrome/canary/) (Recommended)
-   - [Chrome Dev](https://www.google.com/chrome/dev/)
+1. **Use Chrome 138 or newer** (desktop, any channel)
+   - Requires ~22 GB of free disk space and a GPU with >4 GB VRAM (or 16 GB RAM and 4+ CPU cores)
 
-2. **Enable Required Flags**
-   - Navigate to `chrome://flags`
-   - Search for and enable the following flags:
+2. **Enable Required Flags (chat feature only)**
+   - The Summarizer and Language Detector APIs are stable since Chrome 138 and need no flags
+   - The Prompt API (used by the chat) is not yet stable on the web. Navigate to `chrome://flags` and enable:
      - `#optimization-guide-on-device-model` → **Enabled BypassPerfRequirement**
      - `#prompt-api-for-gemini-nano` → **Enabled**
-     - `#summarization-api-for-gemini-nano` → **Enabled**
-     - `#language-detection-api` → **Enabled**
-   - Restart Chrome
+   - Relaunch Chrome
 
 3. **Verify Installation**
    - Open DevTools Console
-   - Type: `await ai.summarizer.capabilities()`
-   - Should return: `{available: "readily"}`
+   - Type: `await Summarizer.availability()` and `await LanguageModel.availability()`
+   - Should return `"available"` (or `"downloadable"` if the model still needs to be downloaded)
+   - Model status and errors: `chrome://on-device-internals`
 
 4. **Download AI Model (if needed)**
    - The first time you use the app, Chrome may need to download the Gemini Nano model
