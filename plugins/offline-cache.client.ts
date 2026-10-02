@@ -16,8 +16,7 @@ export default defineNuxtPlugin(() => {
 
         // Preload critical assets if they exist
         const criticalAssets = [
-          '/icon.png',
-          '/_nuxt/entry.js', // May vary depending on build
+          '/icon.png'
         ]
 
         for (const asset of criticalAssets) {
@@ -93,7 +92,7 @@ export default defineNuxtPlugin(() => {
           )
           console.log('Root page cached:', rootCached)
         } else {
-          console.warn('Workbox precache not found')
+          console.debug('Workbox precache not found yet (service worker not installed)')
         }
       } catch (error) {
         console.debug('Cache verification failed:', error)
