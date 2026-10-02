@@ -248,7 +248,17 @@
               <div class="text-center">
                 <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" aria-hidden="true" />
                 <p class="text-gray-400">Analyzing your document...</p>
-                <p class="text-sm text-gray-500 mt-1">This may take a few moments</p>
+                <p class="text-sm text-gray-500 mt-1">{{ elapsedLabel }}</p>
+                <p class="text-xs text-gray-500 mt-3 max-w-xs mx-auto">
+                  Summarizing runs on your device, so long texts can take several minutes. Keep this tab open.
+                </p>
+                <button
+                  class="btn-secondary mt-4 px-4 py-2 text-sm"
+                  aria-label="Cancel summarization"
+                  @click="cancelSummarize"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
             
@@ -326,12 +336,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import { formatMarkdown } from '../utils/markdownFormatter'
+import { AppError, ErrorCode } from '../utils/errorHandler'
 
 // Lazy load heavy components for better initial load performance
 const FileUploader = defineAsyncComponent(() => import('../components/FileUploader.vue'))
@@ -346,7 +357,7 @@ interface SummaryOptions {
 }
 
 // Use Chrome AI composable directly - no props needed
-const { isSupported, isLoading, error, isCheckingSupport, summarizeText, getCacheStats } = useChromeAI()
+const { isSupported, isLoading, error, isCheckingSupport, summarizeText, cancelSummarize, getCacheStats } = useChromeAI()
 
 // Use offline storage composable
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
@@ -363,6 +374,31 @@ const summaryOptions = ref<SummaryOptions>({
   type: 'tldr',
   format: 'markdown',
   length: 'medium'
+})
+
+const elapsedSeconds = ref(0)
+let elapsedTimer: ReturnType<typeof setInterval> | undefined
+
+const stopElapsedTimer = () => {
+  clearInterval(elapsedTimer)
+  elapsedTimer = undefined
+}
+
+watch(isLoading, (loading) => {
+  stopElapsedTimer()
+  if (!loading) return
+  elapsedSeconds.value = 0
+  elapsedTimer = setInterval(() => {
+    elapsedSeconds.value++
+  }, 1000)
+})
+
+onUnmounted(stopElapsedTimer)
+
+const elapsedLabel = computed(() => {
+  const minutes = Math.floor(elapsedSeconds.value / 60)
+  const seconds = String(elapsedSeconds.value % 60).padStart(2, '0')
+  return `Elapsed: ${minutes}:${seconds}`
 })
 
 // Computed properties - moved from app.vue
@@ -462,6 +498,10 @@ const handleSummarize = async () => {
       }
     }
   } catch (err) {
+    if (err instanceof AppError && err.code === ErrorCode.AI_CANCELLED) {
+      toast.info('Summarization cancelled')
+      return
+    }
     console.error('Summarization failed:', err)
     toast.error(err instanceof Error ? err.message : 'Failed to generate summary')
   }
