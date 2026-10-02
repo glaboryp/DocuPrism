@@ -354,7 +354,7 @@ const createChromeAI = () => {
       })
       const armCreateTimeout = () => {
         clearTimeout(createTimer)
-        createTimer = setTimeout(() => rejectCreate(createAIError('timeout')), AI_CONFIG.timeouts.createSummarizer)
+        createTimer = setTimeout(() => rejectCreate(createAIError('timeout', undefined, { stage: 'create' })), AI_CONFIG.timeouts.createSummarizer)
       }
 
       // Prepare options for create()
@@ -388,14 +388,19 @@ const createChromeAI = () => {
         clearTimeout(createTimer)
       }
       
-      // Summarize with timeout
-      const summarizePromise = summarizer.summarize(text)
+      // Summarize with timeout (generation speed depends heavily on the device)
+      let summarizeTimer: ReturnType<typeof setTimeout> | undefined
       const summarizeTimeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(createAIError('timeout', undefined, { textLength: text.length })), AI_CONFIG.timeouts.summarize)
+        summarizeTimer = setTimeout(() => reject(createAIError('timeout', undefined, { stage: 'summarize', textLength: text.length })), AI_CONFIG.timeouts.summarize)
       })
 
-      const result = await Promise.race([summarizePromise, summarizeTimeoutPromise])
-      
+      let result: string
+      try {
+        result = await Promise.race([summarizer.summarize(text), summarizeTimeoutPromise])
+      } finally {
+        clearTimeout(summarizeTimer)
+      }
+
       // Clean up the summarizer object
       summarizer.destroy()
       

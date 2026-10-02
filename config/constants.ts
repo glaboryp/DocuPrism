@@ -11,7 +11,7 @@ export const AI_CONFIG = {
   timeouts: {
     checkSupport: 10000, // 10 seconds
     createSummarizer: 60000, // 60 seconds without download progress
-    summarize: 120000, // 120 seconds (2 minutes) - increased for large documents
+    summarize: 600000, // 10 minutes - generation can be slow on devices without a strong GPU
     languageDetection: 3000 // 3 seconds
   },
   retries: {
