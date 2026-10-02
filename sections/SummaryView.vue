@@ -248,7 +248,10 @@
               <div class="text-center">
                 <Icon name="heroicons:cog-6-tooth" class="w-8 h-8 text-primary animate-spin mx-auto mb-3" aria-hidden="true" />
                 <p class="text-gray-400">Analyzing your document...</p>
-                <p class="text-sm text-gray-500 mt-1">This may take a few moments</p>
+                <p class="text-sm text-gray-500 mt-1">{{ elapsedLabel }}</p>
+                <p class="text-xs text-gray-500 mt-3 max-w-xs mx-auto">
+                  Summarizing runs on your device, so long texts can take several minutes. Keep this tab open.
+                </p>
               </div>
             </div>
             
@@ -326,7 +329,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
@@ -363,6 +366,31 @@ const summaryOptions = ref<SummaryOptions>({
   type: 'tldr',
   format: 'markdown',
   length: 'medium'
+})
+
+const elapsedSeconds = ref(0)
+let elapsedTimer: ReturnType<typeof setInterval> | undefined
+
+const stopElapsedTimer = () => {
+  clearInterval(elapsedTimer)
+  elapsedTimer = undefined
+}
+
+watch(isLoading, (loading) => {
+  stopElapsedTimer()
+  if (!loading) return
+  elapsedSeconds.value = 0
+  elapsedTimer = setInterval(() => {
+    elapsedSeconds.value++
+  }, 1000)
+})
+
+onUnmounted(stopElapsedTimer)
+
+const elapsedLabel = computed(() => {
+  const minutes = Math.floor(elapsedSeconds.value / 60)
+  const seconds = String(elapsedSeconds.value % 60).padStart(2, '0')
+  return `Elapsed: ${minutes}:${seconds}`
 })
 
 // Computed properties - moved from app.vue
