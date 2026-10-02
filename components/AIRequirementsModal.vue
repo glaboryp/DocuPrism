@@ -35,11 +35,36 @@
             To use DocuPrism's AI features, you need:
           </p>
           
-          <div v-if="!isChrome" class="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
+          <div v-if="browser === 'unsupported'" class="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
             <p class="font-medium text-gray-800 dark:text-gray-200">Open DocuPrism in Google Chrome</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              This browser doesn't include Chrome's on-device AI (Gemini Nano). Open this page in desktop Chrome 138 or newer to use the AI features.
+              This browser doesn't include a built-in on-device AI model. Open this page in desktop Chrome 138 or newer (or Microsoft Edge Canary/Dev) to use the AI features.
             </p>
+          </div>
+
+          <div v-else-if="browser === 'edge'" class="space-y-3">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
+                <span class="text-xs font-bold text-primary">1</span>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800 dark:text-gray-200">Edge Canary or Dev, version 138 or newer</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Windows 10/11 or macOS 13.3+, at least 20 GB of free disk space and a GPU with 5.5 GB of VRAM or more</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
+                <span class="text-xs font-bold text-primary">2</span>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800 dark:text-gray-200">Enable Edge Flags (chat only)</p>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p>Summarization is enabled by default. For the chat, go to <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">edge://flags</code> and set <strong>Prompt API for on-device language model</strong> to <strong>Enabled</strong>.</p>
+                  <p class="mt-1">Then restart Edge and check the device performance class and model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">edge://on-device-internals</code>.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div v-else class="space-y-3">
@@ -111,7 +136,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { isGoogleChrome } from '../utils/browser'
+import { detectAIBrowser, type AIBrowser } from '../utils/browser'
 
 interface Props {
   isOpen: boolean
@@ -135,10 +160,10 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
-const isChrome = ref(true)
+const browser = ref<AIBrowser>('chrome')
 
 onMounted(() => {
-  isChrome.value = isGoogleChrome()
+  browser.value = detectAIBrowser()
   document.addEventListener('keydown', handleKeydown)
 })
 
