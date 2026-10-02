@@ -23,10 +23,25 @@
           <h4 class="text-base sm:text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-2 sm:mb-3 text-center">
             Prompt API Not Available
           </h4>
-          <p v-if="!isChrome" class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 text-center">
-            The chat feature uses Chrome's on-device AI (Gemini Nano), which isn't available in this browser.
-            Open this page in <strong>Google Chrome 138 or newer</strong> on desktop to use it.
+          <p v-if="browser === 'unsupported'" class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 text-center">
+            The chat feature uses a browser's built-in on-device AI, which isn't available in this browser.
+            Open this page in <strong>Google Chrome 138 or newer</strong> on desktop (or Microsoft Edge Canary/Dev) to use it.
           </p>
+          <template v-else-if="browser === 'edge'">
+            <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
+              The chat feature requires Edge's Prompt API to be enabled. This API is currently experimental.
+            </p>
+            <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+              <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To enable it:</p>
+              <ol class="text-xs text-gray-700 dark:text-gray-300 space-y-1.5 sm:space-y-2 list-decimal list-inside">
+                <li>Use <strong>Edge Canary or Dev 138+</strong> on Windows or macOS</li>
+                <li>Open <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">edge://flags</code></li>
+                <li>Set <strong>"Prompt API for on-device language model"</strong> to <strong>Enabled</strong></li>
+                <li><strong>Restart Edge completely</strong></li>
+                <li>Check <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">edge://on-device-internals</code>: the device performance class must be <strong>High</strong> or greater</li>
+              </ol>
+            </div>
+          </template>
           <template v-else>
           <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
             The chat feature requires Chrome's Prompt API to be enabled. This API is currently experimental.
@@ -163,7 +178,7 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import { formatMarkdown } from '../utils/markdownFormatter'
 import { useChromePrompt } from '../composables/useChromePrompt'
 import { useToast } from '../composables/useToast'
-import { isGoogleChrome } from '../utils/browser'
+import { detectAIBrowser, type AIBrowser } from '../utils/browser'
 
 interface Props {
   documentText: string
@@ -188,12 +203,12 @@ const inputMessage = ref('')
 const streamingMessage = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
 const isPromptApiAvailable = ref(false)
-const isChrome = ref(true)
+const browser = ref<AIBrowser>('chrome')
 
 // Check if Prompt API is available on mount (client-side only)
 onMounted(async () => {
   if (typeof window !== 'undefined') {
-    isChrome.value = isGoogleChrome()
+    browser.value = detectAIBrowser()
     isPromptApiAvailable.value = await checkSupport()
     
     // After checking support, try to create session if we have a document

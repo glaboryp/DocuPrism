@@ -128,6 +128,11 @@ To use DocuPrism, you need to enable Chrome's Built-in AI features:
    - Should return `"available"` (or `"downloadable"` if the model still needs to be downloaded)
    - Model status and errors: `chrome://on-device-internals`
 
+**Microsoft Edge (Canary or Dev 138+, Windows/macOS):**
+   - The Summarizer API is enabled by default
+   - For the chat, enable `edge://flags` → **Prompt API for on-device language model** and restart
+   - Model status and device performance class (must be High or greater): `edge://on-device-internals`
+
 4. **Download AI Model (if needed)**
    - The first time you use the app, Chrome may need to download the Gemini Nano model
    - This happens automatically when you click "Summarize"
