@@ -35,15 +35,22 @@
             To use DocuPrism's AI features, you need:
           </p>
           
-          <div class="space-y-3">
+          <div v-if="!isChrome" class="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
+            <p class="font-medium text-gray-800 dark:text-gray-200">Open DocuPrism in Google Chrome</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              This browser doesn't include Chrome's on-device AI (Gemini Nano). Open this page in desktop Chrome 138 or newer to use the AI features.
+            </p>
+          </div>
+
+          <div v-else class="space-y-3">
             <!-- Chrome Version -->
             <div class="flex items-start space-x-3">
               <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
                 <span class="text-xs font-bold text-primary">1</span>
               </div>
               <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Chrome Canary or Dev Channel</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Version 127+ with Built-in AI APIs</p>
+                <p class="font-medium text-gray-800 dark:text-gray-200">Chrome 138 or newer</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Desktop Chrome with at least 22 GB of free disk space</p>
               </div>
             </div>
             
@@ -53,13 +60,14 @@
                 <span class="text-xs font-bold text-primary">2</span>
               </div>
               <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Enable Chrome Flags</p>
+                <p class="font-medium text-gray-800 dark:text-gray-200">Enable Chrome Flags (chat only)</p>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <p>Go to <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://flags</code> and enable:</p>
+                  <p>Summarization needs no flags. For the chat, go to <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://flags</code> and enable:</p>
                   <ul class="list-disc list-inside mt-1 space-y-1">
-                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">summarization-api-for-gemini-nano</code></li>
-                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">prompt-api-for-gemini-nano</code></li>
+                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">optimization-guide-on-device-model</code> (Enabled BypassPerfRequirement)</li>
+                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">prompt-api-for-gemini-nano</code> (Enabled)</li>
                   </ul>
+                  <p class="mt-1">Then relaunch Chrome and check model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://on-device-internals</code>.</p>
                 </div>
               </div>
             </div>
@@ -102,7 +110,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { isGoogleChrome } from '../utils/browser'
+
 interface Props {
   isOpen: boolean
 }
@@ -125,7 +135,10 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
+const isChrome = ref(true)
+
 onMounted(() => {
+  isChrome.value = isGoogleChrome()
   document.addEventListener('keydown', handleKeydown)
 })
 
