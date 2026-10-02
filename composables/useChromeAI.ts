@@ -343,6 +343,18 @@ const createChromeAI = () => {
           languageContext += ' Respond in English, maintaining clear and natural language.'
       }
 
+      // Model download/load can take minutes on first use, so the timeout only
+      // fires when there is no download progress for createSummarizer ms
+      let createTimer: ReturnType<typeof setTimeout> | undefined
+      let rejectCreate: (reason: unknown) => void = () => {}
+      const createTimeoutPromise = new Promise<never>((_, reject) => {
+        rejectCreate = reject
+      })
+      const armCreateTimeout = () => {
+        clearTimeout(createTimer)
+        createTimer = setTimeout(() => rejectCreate(createAIError('timeout')), AI_CONFIG.timeouts.createSummarizer)
+      }
+
       // Prepare options for create()
       const createOptions: SummarizerCreateOptions = {
         type: options.type as 'key-points' | 'tldr' | 'teaser' | 'headline',
@@ -352,6 +364,7 @@ const createChromeAI = () => {
         monitor: (monitor) => {
           monitor.addEventListener('downloadprogress', (e) => {
             console.log(`Download progress: ${Math.round(e.loaded * 100)}%`)
+            armCreateTimeout()
           })
         }
       }
@@ -364,12 +377,14 @@ const createChromeAI = () => {
       }
 
       // Create summarizer with timeout
+      armCreateTimeout()
       const createPromise = window.Summarizer.create(createOptions)
-      const createTimeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(createAIError('timeout')), AI_CONFIG.timeouts.createSummarizer)
-      })
-
-      const summarizer = await Promise.race([createPromise, createTimeoutPromise])
+      let summarizer: SummarizerInstance
+      try {
+        summarizer = await Promise.race([createPromise, createTimeoutPromise])
+      } finally {
+        clearTimeout(createTimer)
+      }
       
       // Summarize with timeout
       const summarizePromise = summarizer.summarize(text)
