@@ -47,7 +47,7 @@ interface SummaryOptions {
 declare global {
   interface Window {
     Summarizer?: {
-      availability(): Promise<'unavailable' | 'downloadable' | 'downloading' | 'available'>
+      availability(options?: { outputLanguage?: string }): Promise<'unavailable' | 'downloadable' | 'downloading' | 'available'>
       create(options?: SummarizerCreateOptions): Promise<SummarizerInstance>
     }
     LanguageDetector?: {
@@ -82,7 +82,7 @@ const createChromeAI = () => {
       }
 
       // Check model availability with timeout
-      const availabilityPromise = window.Summarizer!.availability()
+      const availabilityPromise = window.Summarizer!.availability({ outputLanguage: 'en' })
       const timeoutPromise = new Promise<'available'>((resolve) => {
         setTimeout(() => {
           resolve('available')
@@ -127,6 +127,8 @@ const createChromeAI = () => {
     const languageCodeMap: Record<string, string> = {
       'English': 'en',
       'Spanish': 'es',
+      'French': 'fr',
+      'German': 'de',
       'Japanese': 'ja',
       // Add more mappings as Chrome adds support
     }
