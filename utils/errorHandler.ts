@@ -6,6 +6,7 @@ export enum ErrorCode {
   AI_NOT_AVAILABLE = 'AI_NOT_AVAILABLE',
   AI_DOWNLOADING = 'AI_DOWNLOADING',
   AI_TIMEOUT = 'AI_TIMEOUT',
+  AI_CANCELLED = 'AI_CANCELLED',
   AI_USER_ACTIVATION = 'AI_USER_ACTIVATION',
   AI_NO_RESULT = 'AI_NO_RESULT',
   AI_FAILED = 'AI_FAILED',
@@ -56,7 +57,7 @@ export class AppError extends Error {
 }
 
 export const createAIError = (
-  type: 'notSupported' | 'notAvailable' | 'downloading' | 'timeout' | 'userActivation' | 'noResult' | 'failed',
+  type: 'notSupported' | 'notAvailable' | 'downloading' | 'timeout' | 'cancelled' | 'userActivation' | 'noResult' | 'failed',
   originalError?: Error,
   context?: Record<string, unknown>
 ): AppError => {
@@ -65,6 +66,7 @@ export const createAIError = (
     notAvailable: { code: ErrorCode.AI_NOT_AVAILABLE, message: ERROR_MESSAGES.ai.notAvailable },
     downloading: { code: ErrorCode.AI_DOWNLOADING, message: ERROR_MESSAGES.ai.downloading },
     timeout: { code: ErrorCode.AI_TIMEOUT, message: ERROR_MESSAGES.ai.timeout },
+    cancelled: { code: ErrorCode.AI_CANCELLED, message: ERROR_MESSAGES.ai.cancelled },
     userActivation: { code: ErrorCode.AI_USER_ACTIVATION, message: ERROR_MESSAGES.ai.userActivation },
     noResult: { code: ErrorCode.AI_NO_RESULT, message: ERROR_MESSAGES.ai.noResult },
     failed: { code: ErrorCode.AI_FAILED, message: ERROR_MESSAGES.ai.failed }

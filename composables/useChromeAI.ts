@@ -1,6 +1,6 @@
 import { ref, readonly } from 'vue'
 import { AI_CONFIG } from '../config/constants'
-import { createAIError, logError } from '../utils/errorHandler'
+import { AppError, ErrorCode, createAIError, logError } from '../utils/errorHandler'
 import { useSummaryCache } from './useSummaryCache'
 
 // Shared state (singleton pattern)
@@ -17,11 +17,12 @@ interface SummarizerCreateOptions {
   format?: 'markdown' | 'plain-text'
   length?: 'short' | 'medium' | 'long'
   outputLanguage?: string  // Language code: 'en', 'es', 'ja', etc.
+  signal?: AbortSignal
   monitor?: (monitor: SummarizerMonitor) => void
 }
 
 interface SummarizerInstance {
-  summarize(input: string, options?: { context?: string }): Promise<string>
+  summarize(input: string, options?: { context?: string, signal?: AbortSignal }): Promise<string>
   summarizeStreaming(input: string, options?: { context?: string }): AsyncIterable<string>
   destroy(): void
 }
@@ -291,6 +292,12 @@ const createChromeAI = () => {
   // Initialize cache
   const { getCached, setCached, clearCache, getCacheStats } = useSummaryCache()
 
+  let summarizeController: AbortController | null = null
+
+  const cancelSummarize = () => {
+    summarizeController?.abort()
+  }
+
   // AI Methods using official API
   const summarizeText = async (text: string, options: SummaryOptions): Promise<string> => {
     if (!text.trim()) {
@@ -307,6 +314,15 @@ const createChromeAI = () => {
     isLoading.value = true
     error.value = ''
 
+    const controller = new AbortController()
+    summarizeController = controller
+    const { signal } = controller
+    const abortPromise = new Promise<never>((_, reject) => {
+      signal.addEventListener('abort', () => reject(createAIError('cancelled')), { once: true })
+    })
+    abortPromise.catch(() => {})
+    let summarizer: SummarizerInstance | undefined
+
     try {
       if (!window.Summarizer) {
         throw new Error('Summarizer API is not available')
@@ -320,6 +336,7 @@ const createChromeAI = () => {
       // Detect the language of the input text
       const detectedLanguage = await detectLanguage(text)
       const languageCode = getLanguageCode(detectedLanguage)
+      if (signal.aborted) throw createAIError('cancelled')
       
       // Create language-specific context
       let languageContext = `Please provide the summary in ${detectedLanguage}.`
@@ -363,6 +380,7 @@ const createChromeAI = () => {
         format: options.format as 'markdown' | 'plain-text',
         length: options.length as 'short' | 'medium' | 'long',
         outputLanguage: languageCode,  // Specify output language to avoid warning
+        signal,
         monitor: (monitor) => {
           monitor.addEventListener('downloadprogress', (e) => {
             console.log(`Download progress: ${Math.round(e.loaded * 100)}%`)
@@ -381,9 +399,8 @@ const createChromeAI = () => {
       // Create summarizer with timeout
       armCreateTimeout()
       const createPromise = window.Summarizer.create(createOptions)
-      let summarizer: SummarizerInstance
       try {
-        summarizer = await Promise.race([createPromise, createTimeoutPromise])
+        summarizer = await Promise.race([createPromise, createTimeoutPromise, abortPromise])
       } finally {
         clearTimeout(createTimer)
       }
@@ -396,14 +413,11 @@ const createChromeAI = () => {
 
       let result: string
       try {
-        result = await Promise.race([summarizer.summarize(text), summarizeTimeoutPromise])
+        result = await Promise.race([summarizer.summarize(text, { signal }), summarizeTimeoutPromise, abortPromise])
       } finally {
         clearTimeout(summarizeTimer)
       }
 
-      // Clean up the summarizer object
-      summarizer.destroy()
-      
       if (!result.trim()) {
         throw new Error('No summary was generated')
       }
@@ -414,11 +428,14 @@ const createChromeAI = () => {
       
       return result
     } catch (err) {
-      logError(err, { textLength: text.length, options })
-      const errorMessage = err instanceof Error ? err.message : 'Failed to summarize text'
-      error.value = errorMessage
+      if (!(err instanceof AppError && err.code === ErrorCode.AI_CANCELLED)) {
+        logError(err, { textLength: text.length, options })
+        error.value = err instanceof Error ? err.message : 'Failed to summarize text'
+      }
       throw err
     } finally {
+      summarizer?.destroy()
+      summarizeController = null
       isLoading.value = false
     }
   }
@@ -470,6 +487,7 @@ const createChromeAI = () => {
     // Methods
     checkSupport,
     summarizeText,
+    cancelSummarize,
     initialize,
     
     // Cache methods

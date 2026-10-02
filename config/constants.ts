@@ -58,6 +58,7 @@ export const ERROR_MESSAGES = {
     downloading: 'Summarizer model is currently downloading. Please wait...',
     downloadable: 'Summarizer model needs to be downloaded',
     timeout: 'Operation timed out. Please try again.',
+    cancelled: 'Summarization cancelled',
     userActivation: 'User interaction required to use Summarizer API',
     noResult: 'No summary was generated',
     failed: 'Failed to summarize text'

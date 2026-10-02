@@ -252,6 +252,13 @@
                 <p class="text-xs text-gray-500 mt-3 max-w-xs mx-auto">
                   Summarizing runs on your device, so long texts can take several minutes. Keep this tab open.
                 </p>
+                <button
+                  class="btn-secondary mt-4 px-4 py-2 text-sm"
+                  aria-label="Cancel summarization"
+                  @click="cancelSummarize"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
             
@@ -335,6 +342,7 @@ import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import { formatMarkdown } from '../utils/markdownFormatter'
+import { AppError, ErrorCode } from '../utils/errorHandler'
 
 // Lazy load heavy components for better initial load performance
 const FileUploader = defineAsyncComponent(() => import('../components/FileUploader.vue'))
@@ -349,7 +357,7 @@ interface SummaryOptions {
 }
 
 // Use Chrome AI composable directly - no props needed
-const { isSupported, isLoading, error, isCheckingSupport, summarizeText, getCacheStats } = useChromeAI()
+const { isSupported, isLoading, error, isCheckingSupport, summarizeText, cancelSummarize, getCacheStats } = useChromeAI()
 
 // Use offline storage composable
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
@@ -490,6 +498,10 @@ const handleSummarize = async () => {
       }
     }
   } catch (err) {
+    if (err instanceof AppError && err.code === ErrorCode.AI_CANCELLED) {
+      toast.info('Summarization cancelled')
+      return
+    }
     console.error('Summarization failed:', err)
     toast.error(err instanceof Error ? err.message : 'Failed to generate summary')
   }
