@@ -10,7 +10,7 @@ export const APP_CONFIG = {
 export const AI_CONFIG = {
   timeouts: {
     checkSupport: 10000, // 10 seconds
-    createSummarizer: 15000, // 15 seconds
+    createSummarizer: 60000, // 60 seconds without download progress
     summarize: 120000, // 120 seconds (2 minutes) - increased for large documents
     languageDetection: 3000 // 3 seconds
   },
