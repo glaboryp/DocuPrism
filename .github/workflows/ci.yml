@@ -22,6 +22,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec eslint .
@@ -34,6 +35,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vue-tsc --noEmit
@@ -46,6 +48,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest run
@@ -58,6 +61,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -70,6 +74,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
@@ -90,4 +95,5 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          check-latest: true
       - run: pnpm audit
