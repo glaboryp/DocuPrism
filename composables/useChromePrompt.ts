@@ -1,5 +1,6 @@
 import { ref, readonly } from 'vue'
 import { createAIError, logError } from '../utils/errorHandler'
+import { needsDocumentContext } from '../utils/semanticChecks'
 import type { AILanguageModel, AISamplingMode } from '../types/chrome-ai'
 
 // Greedy sampling: highest determinism and the only sampling mode eligible for
@@ -99,6 +100,27 @@ export const useChromePrompt = () => {
     }
   }
 
+  // Only obvious small talk skips the document context: routing the wrong way
+  // would cost answer quality, so the check is deliberately conservative
+  const buildPrompt = (message: string): string => {
+    if (!documentContext.value || !needsDocumentContext(message)) return message
+
+    return `Based on the following document:
+
+---
+${documentContext.value}
+---
+
+Question: ${message}
+
+CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE:
+1. Answer the question based ONLY on the information in the document above
+2. If the answer is not in the document, say so clearly
+3. **RESPOND IN THE EXACT SAME LANGUAGE AS THE QUESTION** - If the question is in English, respond in English. If it's in Spanish, respond in Spanish. Match the language of the question precisely.
+4. Keep your answer concise and accurate
+5. Do not translate the question or change languages - maintain the same language throughout your response`
+  }
+
   // Send a message and get response
   const sendMessage = async (message: string): Promise<string> => {
     if (!session.value) {
@@ -119,7 +141,7 @@ export const useChromePrompt = () => {
       chatHistory.value.push(userMessage)
 
       // Get AI response
-      const response = await session.value.prompt(message)
+      const response = await session.value.prompt(buildPrompt(message))
 
       // Add assistant message to history
       const assistantMessage: ChatMessage = {
@@ -164,26 +186,8 @@ export const useChromePrompt = () => {
 
       let fullResponse = ''
 
-      // Build the full prompt with document context
-      const fullPrompt = documentContext.value 
-        ? `Based on the following document:
-
----
-${documentContext.value}
----
-
-Question: ${message}
-
-CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE:
-1. Answer the question based ONLY on the information in the document above
-2. If the answer is not in the document, say so clearly
-3. **RESPOND IN THE EXACT SAME LANGUAGE AS THE QUESTION** - If the question is in English, respond in English. If it's in Spanish, respond in Spanish. Match the language of the question precisely.
-4. Keep your answer concise and accurate
-5. Do not translate the question or change languages - maintain the same language throughout your response`
-        : message
-      
-      // Get streaming response with context included
-      const stream = session.value.promptStreaming(fullPrompt)
+      // Get streaming response with context included only when the question needs it
+      const stream = session.value.promptStreaming(buildPrompt(message))
       for await (const chunk of stream) {
         // Accumulate chunks instead of replacing
         fullResponse += chunk

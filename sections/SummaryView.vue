@@ -92,6 +92,19 @@
                 Very long text may take more time to process
               </span>
             </div>
+
+            <!-- Semantic quality warning (heuristics + Decisions API when available) -->
+            <div
+              v-if="documentQuality"
+              class="rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 p-3 flex items-start space-x-2"
+              role="alert"
+            >
+              <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div class="text-xs sm:text-sm text-yellow-800 dark:text-yellow-200">
+                <p class="font-medium">This document may not summarize well</p>
+                <p class="mt-1">{{ describeQualityIssues(documentQuality.issues) }}</p>
+              </div>
+            </div>
           </div>
           
           <!-- Summarizer Options -->
@@ -332,6 +345,13 @@
         </aside>
       </section>
     </div>
+
+    <SensitiveDataDialog
+      :is-open="isSensitiveDialogOpen"
+      :findings="sensitiveFindings"
+      @confirm="confirmSave"
+      @cancel="cancelSave"
+    />
   </main>
 </template>
 
@@ -341,8 +361,11 @@ import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
+import { useSemanticGates } from '../composables/useSemanticGates'
 import { formatMarkdown } from '../utils/markdownFormatter'
+import { describeQualityIssues, type DocumentQuality, type SensitiveFinding } from '../utils/semanticChecks'
 import { AppError, ErrorCode } from '../utils/errorHandler'
+import SensitiveDataDialog from '../components/SensitiveDataDialog.vue'
 
 // Lazy load heavy components for better initial load performance
 const FileUploader = defineAsyncComponent(() => import('../components/FileUploader.vue'))
@@ -362,6 +385,9 @@ const { isSupported, isLoading, error, isCheckingSupport, summarizeText, cancelS
 // Use offline storage composable
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
 
+// Semantic pre-checks: quality on input, sensitive data before persisting
+const { assessDocumentQuality, scanSensitiveData } = useSemanticGates()
+
 // Use toast notifications
 const toast = useToast()
 
@@ -375,6 +401,18 @@ const summaryOptions = ref<SummaryOptions>({
   format: 'markdown',
   length: 'medium'
 })
+
+// Quality is tied to the exact text it was computed for, so editing invalidates it
+const qualityCheck = ref<{ text: string, quality: DocumentQuality } | null>(null)
+const documentQuality = computed(() => {
+  const check = qualityCheck.value
+  if (!check || check.text !== inputText.value || check.quality.usable) return null
+  return check.quality
+})
+
+const isSensitiveDialogOpen = ref(false)
+const sensitiveFindings = ref<SensitiveFinding[]>([])
+const pendingAnalysis = ref<{ text: string, summary: string } | null>(null)
 
 const elapsedSeconds = ref(0)
 let elapsedTimer: ReturnType<typeof setInterval> | undefined
@@ -465,15 +503,52 @@ onMounted(() => {
 // No props needed - using composable directly
 
 // Local methods
+const saveToHistory = (text: string, result: string) => {
+  if (!isStorageAvailable.value || !result) return
+
+  try {
+    saveAnalysis(text, result, summaryOptions.value)
+    toast.info('Analysis saved to history')
+  } catch (storageError) {
+    console.warn('Failed to save analysis offline:', storageError)
+    toast.warning('Could not save to history')
+  }
+}
+
+const confirmSave = () => {
+  const pending = pendingAnalysis.value
+
+  isSensitiveDialogOpen.value = false
+  sensitiveFindings.value = []
+  pendingAnalysis.value = null
+
+  if (pending) saveToHistory(pending.text, pending.summary)
+}
+
+const cancelSave = () => {
+  isSensitiveDialogOpen.value = false
+  sensitiveFindings.value = []
+  pendingAnalysis.value = null
+  toast.info('Summary kept on screen, not saved to history')
+}
+
 const handleSummarize = async () => {
   if (!canSummarize.value) return
   
   // Track if we had cache before the operation
   const cacheStatsBefore = getCacheStats()
   const hadCacheBefore = cacheStatsBefore.size
+  const text = inputText.value
   
   try {
-    const result = await summarizeText(inputText.value, summaryOptions.value)
+    // Warn about content that will not summarize well, but never block the user
+    const quality = await assessDocumentQuality(text)
+    qualityCheck.value = { text, quality }
+    if (!quality.usable) {
+      toast.warning(describeQualityIssues(quality.issues))
+    }
+
+    const result = await summarizeText(text, summaryOptions.value)
     summary.value = result
     
     // Check if cache was used (size didn't increase)
@@ -487,16 +562,18 @@ const handleSummarize = async () => {
       toast.success('Summary generated successfully!')
     }
     
-    // Save analysis offline if storage is available
-    if (isStorageAvailable.value && result) {
-      try {
-        saveAnalysis(inputText.value, result, summaryOptions.value)
-        toast.info('Analysis saved to history')
-      } catch (storageError) {
-        console.warn('Failed to save analysis offline:', storageError)
-        toast.warning('Could not save to history')
-      }
+    if (!result || !isStorageAvailable.value) return
+
+    // Ask before persisting personal data or credentials to the local history
+    const findings = await scanSensitiveData(text)
+    if (findings.length > 0) {
+      pendingAnalysis.value = { text, summary: result }
+      sensitiveFindings.value = findings
+      isSensitiveDialogOpen.value = true
+      return
     }
+
+    saveToHistory(text, result)
   } catch (err) {
     if (err instanceof AppError && err.code === ErrorCode.AI_CANCELLED) {
       toast.info('Summarization cancelled')
@@ -510,6 +587,10 @@ const handleSummarize = async () => {
 const handleClear = () => {
   inputText.value = ''
   summary.value = ''
+  qualityCheck.value = null
+  pendingAnalysis.value = null
+  sensitiveFindings.value = []
+  isSensitiveDialogOpen.value = false
   toast.info('Content cleared')
 }
 
@@ -523,7 +604,7 @@ const handleCopy = async () => {
   }
 }
 
-const handleFileLoaded = (
+const handleFileLoaded = async (
   content: string, 
   filename: string, 
   metadata?: { wordCount: number, charCount: number, pageCount?: number }
@@ -537,6 +618,13 @@ const handleFileLoaded = (
     toast.info(`File "${filename}" loaded${pageInfo}. ${metadata.wordCount} words ready to summarize.`)
   } else {
     toast.info(`File "${filename}" loaded. You can now edit or summarize it.`)
+  }
+
+  // Flag failed extractions (scanned PDFs, OCR noise) before the user summarizes
+  const quality = await assessDocumentQuality(content)
+  qualityCheck.value = { text: content, quality }
+  if (!quality.usable) {
+    toast.warning(describeQualityIssues(quality.issues))
   }
 }
 

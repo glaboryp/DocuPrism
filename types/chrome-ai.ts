@@ -37,5 +37,33 @@ export interface AILanguageModel {
   destroy(): void;
 }
 
+// Decisions API (Intent to Prototype). The shape is illustrative and still
+// subject to change, so callers feature-detect window.DecisionModel and fall
+// back to the heuristics in utils/semanticChecks.ts
+interface AIDecisionQuestion {
+  id: string;
+  type: 'boolean';
+  prompt: string;
+}
+
+interface AIDecisionModelOptions {
+  context?: string;
+  questions: AIDecisionQuestion[];
+}
+
+interface AIDecisionAnswer {
+  label: 'true' | 'false';
+  confidence: number;
+}
+
+type AIDecisionResult = Record<string, AIDecisionAnswer>;
+
+interface AIDecisionModel {
+  decide(input: string): Promise<AIDecisionResult>;
+  destroy?(): void;
+}
+
+export type { AIDecisionAnswer, AIDecisionModel, AIDecisionModelOptions, AIDecisionQuestion, AIDecisionResult };
+
 // Note: Window interface extensions are declared in useChromeAI.ts to avoid conflicts
 export {};
