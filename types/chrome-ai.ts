@@ -1,17 +1,21 @@
 // Types for Chrome Built-in AI API
-export interface AICapabilityAvailability {
-  available: 'readily' | 'after-download' | 'no';
-}
 
-export interface AISummarizerCapabilities {
-  available: 'readily' | 'after-download' | 'no';
-  defaultTopK?: number;
-  maxTopK?: number;
-  defaultTemperature?: number;
-}
+// Sampling modes accepted by the Prompt API on the web.
+// Raw topK/temperature are Chrome Extensions only and deprecated on the web.
+export type AISamplingMode =
+  | 'most-predictable'
+  | 'predictable'
+  | 'slightly-predictable'
+  | 'balanced'
+  | 'slightly-creative'
+  | 'creative'
+  | 'most-creative';
+
+// Returned by availability(), which replaced the legacy capabilities()
+export type AIAvailability = 'unavailable' | 'downloadable' | 'downloading' | 'available';
 
 export interface AISummarizerOptions {
-  type?: 'tl;dr' | 'key-points' | 'teaser' | 'headline';
+  type?: 'tldr' | 'key-points' | 'teaser' | 'headline';
   format?: 'markdown' | 'plain-text';
   length?: 'short' | 'medium' | 'long';
   sharedContext?: string;
@@ -22,17 +26,8 @@ export interface AISummarizer {
   destroy(): void;
 }
 
-export interface AIPromptCapabilities {
-  available: 'readily' | 'after-download' | 'no';
-  defaultTopK?: number;
-  maxTopK?: number;
-  defaultTemperature?: number;
-}
-
 export interface AIPromptOptions {
-  temperature?: number;
-  topK?: number;
-  systemPrompt?: string;
+  samplingMode?: AISamplingMode;
 }
 
 export interface AILanguageModel {

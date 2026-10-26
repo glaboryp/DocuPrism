@@ -25,35 +25,32 @@
           </h4>
           <p v-if="browser === 'unsupported'" class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 text-center">
             The chat feature uses a browser's built-in on-device AI, which isn't available in this browser.
-            Open this page in <strong>Google Chrome 138 or newer</strong> on desktop (or Microsoft Edge Canary/Dev) to use it.
+            Open this page in <strong>Google Chrome 148 or newer</strong> on desktop (or a recent Microsoft Edge) to use it.
           </p>
           <template v-else-if="browser === 'edge'">
             <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
-              The chat feature requires Edge's Prompt API to be enabled. This API is currently experimental.
+              The chat feature needs Edge's Prompt API, which ships enabled by default from Chromium 148.
             </p>
             <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-              <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To enable it:</p>
+              <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To fix it:</p>
               <ol class="text-xs text-gray-700 dark:text-gray-300 space-y-1.5 sm:space-y-2 list-decimal list-inside">
-                <li>Use <strong>Edge Canary or Dev 138+</strong> on Windows or macOS</li>
-                <li>Open <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">edge://flags</code></li>
-                <li>Set <strong>"Prompt API for on-device language model"</strong> to <strong>Enabled</strong></li>
-                <li><strong>Restart Edge completely</strong></li>
+                <li>Update to a recent <strong>Microsoft Edge Stable</strong> on Windows or macOS</li>
+                <li>No flags are needed: the Prompt API and the Summarizer are enabled by default</li>
+                <li>If the model is still downloading, restart Edge and wait for it to finish</li>
                 <li>Check <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">edge://on-device-internals</code>: the device performance class must be <strong>High</strong> or greater</li>
               </ol>
             </div>
           </template>
           <template v-else>
           <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
-            The chat feature requires Chrome's Prompt API to be enabled. This API is currently experimental.
+            The chat feature needs Chrome's Prompt API, which is stable and enabled by default since Chrome 148.
           </p>
           <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-            <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To enable it:</p>
+            <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To fix it:</p>
             <ol class="text-xs text-gray-700 dark:text-gray-300 space-y-1.5 sm:space-y-2 list-decimal list-inside">
-              <li>Use <strong>Chrome 138 or newer</strong> on desktop</li>
-              <li>Open <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">chrome://flags</code></li>
-              <li>Set <strong>"Prompt API for Gemini Nano"</strong> to <strong>Enabled</strong></li>
-              <li>Set <strong>"Enables optimization guide on device"</strong> to <strong>Enabled BypassPerfRequirement</strong></li>
-              <li><strong>Relaunch Chrome completely</strong></li>
+              <li>Use <strong>Chrome 148 or newer</strong> on desktop (check <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">chrome://version</code>)</li>
+              <li>No flags are needed: the Prompt API and the Summarizer are enabled by default</li>
+              <li>If the model is still downloading, wait for it to finish in <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">chrome://on-device-internals</code></li>
               <li>Verify in console: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">await LanguageModel.availability()</code> should return <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">available</code> or <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">downloadable</code></li>
             </ol>
           </div>
@@ -63,7 +60,7 @@
               Open DevTools Console and type: <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">typeof LanguageModel</code>
             </p>
             <p class="text-xs text-blue-600 dark:text-blue-500 mt-1">
-              If it shows <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">"undefined"</code>, the flag is not enabled. You can also check the model download at <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">chrome://on-device-internals</code>.
+              If it shows <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">"undefined"</code>, your Chrome is too old: update to Chrome 148 or newer. You can also check the model download at <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">chrome://on-device-internals</code>.
             </p>
           </div>
           <p class="text-xs text-yellow-600 dark:text-yellow-500 text-center">

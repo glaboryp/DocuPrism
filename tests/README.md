@@ -10,12 +10,14 @@ DocuPrism uses a comprehensive testing strategy with both unit tests and end-to-
 tests/
 ├── setup.ts                          # Test setup and mocks
 ├── composables/                      # Unit tests for composables
-│   ├── useToast.test.ts
+│   ├── useChromeAI.test.ts
+│   ├── useChromePrompt.test.ts
+│   ├── useKeyboardShortcuts.test.ts
 │   ├── useOfflineStorage.test.ts
-│   └── useKeyboardShortcuts.test.ts
-└── e2e/                             # End-to-end tests
-    ├── toast-notifications.spec.ts
-    └── history-page.spec.ts
+│   ├── useSummaryCache.test.ts
+│   └── useToast.test.ts
+└── e2e/                              # End-to-end tests
+    └── basic-navigation.spec.ts
 ```
 
 ## Installation
@@ -65,24 +67,23 @@ pnpm test:e2e:ui
 pnpm test:e2e:debug
 
 # Run specific E2E test
-pnpm test:e2e toast-notifications.spec.ts
+pnpm test:e2e basic-navigation.spec.ts
 ```
 
 ## Test Coverage
 
-### Unit Tests
+### Unit Tests (34 tests)
 
-- ✅ **useToast**: Toast notifications (success, error, info, warning)
-- ✅ **useOfflineStorage**: Local storage operations (save, load, delete)
-- ✅ **useKeyboardShortcuts**: Keyboard navigation and shortcuts
+- ✅ **useToast**: Toast notifications (7 tests)
+- ✅ **useOfflineStorage**: Local storage operations (8 tests)
+- ✅ **useSummaryCache**: Summary caching (10 tests)
+- ✅ **useChromeAI**: Summarizer integration (2 tests)
+- ✅ **useChromePrompt**: Prompt API session and sampling mode (3 tests)
+- ✅ **useKeyboardShortcuts**: Keyboard navigation and shortcuts (4 tests)
 
 ### E2E Tests
 
-- ✅ **Basic Navigation**: Home page, history navigation (5 tests)
-- ⚠️ **Toast Notifications**: Requiere ajustes a la UI real (deshabilitado)
-- ⚠️ **History Page**: Requiere ajustes a la UI real (deshabilitado)
-
-**Nota**: Los tests E2E de toast y history fueron creados basándose en suposiciones sobre la UI. Necesitan ser actualizados para coincidir con la implementación real de la aplicación.
+- ✅ **Basic Navigation**: Home page, history navigation (4 tests)
 
 ## Writing New Tests
 
@@ -118,6 +119,7 @@ test('should perform action', async ({ page }) => {
 The test setup (`tests/setup.ts`) includes mocks for:
 
 - `window.Summarizer` - AI summarization API
+- `window.LanguageModel` - Prompt API used by the chat (mocked per test file)
 - `window.LanguageDetector` - Language detection API
 - `navigator.clipboard` - Clipboard operations
 - `localStorage` - Local storage
@@ -152,7 +154,7 @@ pnpm test --grep "should show success"
 
 ```bash
 # Run specific test file
-pnpm test:e2e toast-notifications.spec.ts
+pnpm test:e2e basic-navigation.spec.ts
 
 # Run in headed mode (see browser)
 pnpm test:e2e --headed
@@ -172,7 +174,7 @@ pnpm test:e2e:debug
 ## Known Limitations
 
 - Chrome AI APIs are mocked in unit tests
-- E2E tests require Chrome Canary/Dev for full AI functionality
+- E2E tests only cover navigation: the built-in AI APIs aren't available in the Playwright run, so the AI features are exercised through the mocks in unit tests
 - Some TypeScript warnings are expected (dependencies not installed until `pnpm install`)
 - Composables that use Vue lifecycle hooks (like `onMounted`) must be wrapped in a Vue component for testing
 
