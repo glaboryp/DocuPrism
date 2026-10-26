@@ -1,19 +1,19 @@
 <template>
-  <div 
+  <div
     v-if="showDevInfo && !isOnline"
-    class="fixed bottom-4 right-4 bg-yellow-600 text-white text-xs px-3 py-2 rounded-lg shadow-lg z-50 max-w-sm"
+    class="fixed bottom-6 left-4 z-[85] max-w-xs bg-ink px-4 py-3 text-meta text-sheet"
   >
-    <div class="flex items-center space-x-2">
-      <Icon name="heroicons:information-circle" class="w-4 h-4" />
-      <div>
-        <div class="font-semibold">Development Mode - Offline</div>
-        <div class="text-yellow-100">Console errors are normal (HMR/WebSocket)</div>
-      </div>
-      <button 
-        class="text-yellow-200 hover:text-white"
+    <div class="flex items-start gap-3">
+      <p class="flex-1">
+        Development mode, offline. Console network errors are expected.
+      </p>
+      <button
+        type="button"
+        class="-mr-1 inline-flex h-5 w-5 items-center justify-center opacity-70 transition-opacity hover:opacity-100"
+        aria-label="Dismiss development notice"
         @click="dismissDevInfo"
       >
-        <Icon name="heroicons:x-mark" class="w-4 h-4" />
+        <Icon name="heroicons:x-mark" class="h-3.5 w-3.5" aria-hidden="true" />
       </button>
     </div>
   </div>
@@ -27,10 +27,8 @@ const showDevInfo = ref(false)
 
 const updateOnlineStatus = () => {
   isOnline.value = navigator.onLine
-  
-  // Only show dev info if offline and in development mode
+
   if (import.meta.dev && !navigator.onLine) {
-    // Show after a delay to not be intrusive
     setTimeout(() => {
       const dismissed = sessionStorage.getItem('dev-info-dismissed')
       if (!dismissed) {

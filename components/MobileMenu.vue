@@ -56,7 +56,7 @@
       </nav>
 
       <div class="frame mt-10 flex items-center justify-between">
-        <span class="text-ui">{{ isDark ? 'Dark mode' : 'Light mode' }}</span>
+        <span class="text-ui">{{ isDark ? 'Light mode' : 'Dark mode' }}</span>
         <ThemeToggle />
       </div>
 

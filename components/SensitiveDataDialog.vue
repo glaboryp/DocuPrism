@@ -1,68 +1,84 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 overflow-y-auto"
-    @click="cancel"
+    class="fixed inset-0 z-[120] flex items-end justify-center sm:items-stretch sm:justify-end"
   >
-    <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity" />
+    <div
+      class="absolute inset-0 bg-black/40"
+      aria-hidden="true"
+      @click="cancel"
+    />
 
-    <!-- Dialog -->
-    <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="sensitive-dialog-title"
-        aria-describedby="sensitive-dialog-description"
-        class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto"
-        @click.stop
-      >
-        <div class="flex items-center space-x-2 mb-3">
-          <Icon name="heroicons:shield-exclamation" class="w-6 h-6 text-amber-500" aria-hidden="true" />
-          <h3 id="sensitive-dialog-title" class="text-lg font-semibold text-gray-900 dark:text-white">
-            Sensitive data detected
-          </h3>
-        </div>
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="sensitive-dialog-title"
+      aria-describedby="sensitive-dialog-description"
+      class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto bg-sheet p-6 sm:h-full sm:max-h-none sm:w-[560px] sm:p-10"
+      @click.stop
+    >
+      <div class="flex items-start justify-between gap-6">
+        <h2 id="sensitive-dialog-title" class="font-read text-title">
+          Sensitive data found.
+        </h2>
+        <button
+          type="button"
+          class="-mr-2 inline-flex h-11 w-11 flex-shrink-0 items-center justify-center text-ink transition-colors hover:bg-inset"
+          aria-label="Close"
+          @click="cancel"
+        >
+          <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
 
-        <p id="sensitive-dialog-description" class="text-sm text-gray-600 dark:text-gray-300">
-          The document you are about to save to history contains:
+      <p id="sensitive-dialog-description" class="mt-4 text-ui text-ink-muted">
+        This document contains things you may not want written to the history in this browser.
+        The summary stays on screen either way.
+      </p>
+
+      <ul class="mt-8 space-y-6" aria-label="Detected sensitive data">
+        <li v-for="group in groups" :key="group.kind">
+          <p class="text-ui font-medium">
+            {{ SENSITIVE_KIND_LABELS[group.kind] }}
+          </p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <code
+              v-for="(preview, index) in group.previews"
+              :key="`${group.kind}-${index}`"
+              class="bg-inset px-2 py-1 text-meta"
+            >{{ preview }}</code>
+          </div>
+        </li>
+      </ul>
+
+      <div class="mt-8 bg-inset p-4">
+        <p class="text-ui font-medium">What gets saved</p>
+        <p class="mt-2 text-meta">
+          The full document text and this summary, in this browser's local storage. No server
+          receives either. You can delete the entry from History at any time.
         </p>
+      </div>
 
-        <ul class="mt-3 space-y-3" aria-label="Detected sensitive data">
-          <li v-for="group in groups" :key="group.kind">
-            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">
-              {{ SENSITIVE_KIND_LABELS[group.kind] }}
-            </p>
-            <div class="mt-1 flex flex-wrap gap-1.5">
-              <code
-                v-for="(preview, index) in group.previews"
-                :key="`${group.kind}-${index}`"
-                class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded"
-              >{{ preview }}</code>
-            </div>
-          </li>
-        </ul>
+      <p class="meta mt-4">
+        History stays on this device until you delete it. The summary stays on screen either way.
+      </p>
 
-        <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
-          History is stored only in this browser's local storage, and it stays there until you delete it.
-          The summary stays on screen either way.
-        </p>
-
-        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-5">
-          <button
-            ref="cancelButton"
-            class="btn-secondary px-4 py-2 text-sm"
-            @click="cancel"
-          >
-            Don't save
-          </button>
-          <button
-            class="btn-primary px-4 py-2 text-sm"
-            @click="confirm"
-          >
-            Save anyway
-          </button>
-        </div>
+      <div class="mt-auto flex flex-col-reverse gap-2 pt-10 sm:flex-row sm:items-center sm:justify-end">
+        <button
+          type="button"
+          class="btn-text justify-center"
+          @click="confirm"
+        >
+          Save anyway
+        </button>
+        <button
+          ref="cancelButton"
+          type="button"
+          class="btn btn-primary w-full sm:w-auto"
+          @click="cancel"
+        >
+          Keep on screen
+        </button>
       </div>
     </div>
   </div>
@@ -89,6 +105,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const cancelButton = ref<HTMLButtonElement | null>(null)
+const previouslyFocused = ref<HTMLElement | null>(null)
 
 const groups = computed(() => groupSensitiveFindings(props.findings))
 
@@ -100,25 +117,28 @@ const confirm = () => {
   emit('confirm')
 }
 
-// Escape cancels: the safe option is always the default
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') cancel()
 }
 
 watch(() => props.isOpen, (open) => {
-  // The watcher runs immediately, including during SSR where there is no document
   if (typeof document === 'undefined') return
 
   if (open) {
+    previouslyFocused.value = document.activeElement as HTMLElement | null
     document.addEventListener('keydown', handleKeydown)
+    document.body.style.overflow = 'hidden'
     nextTick(() => cancelButton.value?.focus())
   } else {
     document.removeEventListener('keydown', handleKeydown)
+    document.body.style.overflow = ''
+    previouslyFocused.value?.focus()
   }
 }, { immediate: true })
 
 onUnmounted(() => {
   if (typeof document === 'undefined') return
   document.removeEventListener('keydown', handleKeydown)
+  document.body.style.overflow = ''
 })
 </script>

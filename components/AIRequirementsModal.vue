@@ -1,137 +1,121 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 overflow-y-auto"
-    @click="closeModal"
+    class="fixed inset-0 z-[120] flex items-end justify-center sm:items-stretch sm:justify-end"
   >
-    <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity" />
-    
-    <!-- Modal -->
-    <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
-      <div
-        class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 transform transition-all max-h-[90vh] overflow-y-auto"
-        @click.stop
-      >
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-2">
-            <Icon name="heroicons:exclamation-triangle" class="w-6 h-6 text-red-500" />
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Chrome AI Not Available
-            </h3>
-          </div>
-          <button
-            class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            @click="closeModal"
-          >
-            <Icon name="heroicons:x-mark" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
-        </div>
-        
-        <!-- Content -->
-        <div class="space-y-4 text-sm text-gray-600 dark:text-gray-300">
-          <p class="font-medium text-gray-800 dark:text-gray-200">
-            To use DocuPrism's AI features, you need:
-          </p>
-          
-          <div v-if="browser === 'unsupported'" class="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
-            <p class="font-medium text-gray-800 dark:text-gray-200">Open DocuPrism in Google Chrome</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              This browser doesn't include a built-in on-device AI model. Open this page in desktop Chrome 148 or newer (or a recent Microsoft Edge) to use the AI features.
-            </p>
-          </div>
+    <div
+      class="absolute inset-0 bg-black/40"
+      aria-hidden="true"
+      @click="closeModal"
+    />
 
-          <div v-else-if="browser === 'edge'" class="space-y-3">
-            <div class="flex items-start space-x-3">
-              <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
-                <span class="text-xs font-bold text-primary">1</span>
-              </div>
-              <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Microsoft Edge (recent Stable), Windows or macOS</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">macOS 13+, at least 22 GB of free disk space and a GPU with more than 4 GB of VRAM (or 16 GB of RAM and 4+ CPU cores)</p>
-              </div>
-            </div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-requirements-title"
+      class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto bg-sheet p-6 sm:h-full sm:max-h-none sm:w-[560px] sm:p-10"
+      @click.stop
+    >
+      <div class="flex items-start justify-between gap-6">
+        <h2 id="ai-requirements-title" class="font-read text-title">
+          This browser cannot run the model.
+        </h2>
+        <button
+          ref="closeButton"
+          type="button"
+          class="-mr-2 inline-flex h-11 w-11 flex-shrink-0 items-center justify-center text-ink transition-colors hover:bg-inset"
+          aria-label="Close"
+          @click="closeModal"
+        >
+          <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
 
-            <div class="flex items-start space-x-3">
-              <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
-                <span class="text-xs font-bold text-primary">2</span>
-              </div>
-              <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">No flags needed</p>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <p>The Summarizer and the Prompt API are enabled by default. If the model is still missing, Edge downloads it on first use.</p>
-                  <p class="mt-1">Check the device performance class and model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">edge://on-device-internals</code>.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+      <p class="mt-4 text-ui text-ink-muted">
+        DocuPrism uses the language model built into Chrome. There is no server to fall back to,
+        so the browser has to bring its own.
+      </p>
 
-          <div v-else class="space-y-3">
-            <!-- Chrome Version -->
-            <div class="flex items-start space-x-3">
-              <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
-                <span class="text-xs font-bold text-primary">1</span>
-              </div>
-              <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Chrome 148 or newer</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Desktop Chrome with at least 22 GB of free disk space and a GPU with more than 4 GB of VRAM (or 16 GB of RAM and 4+ CPU cores)</p>
-              </div>
-            </div>
-            
-            <!-- Flags -->
-            <div class="flex items-start space-x-3">
-              <div class="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center mt-0.5">
-                <span class="text-xs font-bold text-primary">2</span>
-              </div>
-              <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">No flags needed</p>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <p>The Summarizer, Language Detector and Prompt APIs are enabled by default since Chrome 148. If the model is still missing, Chrome downloads it on first use.</p>
-                  <p class="mt-1">Check model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://on-device-internals</code>.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Links -->
-          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Helpful resources:</p>
-            <div class="flex flex-col space-y-1">
-              <a
-                href="https://developer.chrome.com/docs/ai/built-in"
-                target="_blank"
-                class="text-primary hover:text-primary-hover text-xs underline"
-              >
-                Chrome Built-in AI Documentation
-              </a>
-              <a
-                href="https://developer.chrome.com/docs/ai/prompt-api"
-                target="_blank"
-                class="text-primary hover:text-primary-hover text-xs underline"
-              >
-                Prompt API Guide
-              </a>
-            </div>
-          </div>
+      <div v-if="browser === 'unsupported'" class="mt-8 space-y-3 text-ui">
+        <p class="font-medium">Open this page in desktop Chrome or Edge.</p>
+        <p class="text-ink-muted">
+          This browser does not include a built-in on-device model. Open DocuPrism in
+          <strong class="text-ink">Chrome 148 or newer</strong>, or a recent
+          <strong class="text-ink">Microsoft Edge</strong> on Windows or macOS.
+        </p>
+      </div>
+
+      <div v-else-if="browser === 'edge'" class="mt-8 space-y-4 text-ui">
+        <p class="font-medium">Microsoft Edge Stable, Windows or macOS</p>
+        <p class="text-ink-muted">
+          No flags are needed. The Summarizer and the Prompt API are enabled by default.
+          If the model is missing, Edge downloads it on first use.
+        </p>
+        <p class="text-ink-muted">
+          Check the model and the device performance class at
+          <code class="bg-inset px-1 py-0.5">edge://on-device-internals</code>.
+          The class must be <strong class="text-ink">High</strong> or greater.
+        </p>
+      </div>
+
+      <div v-else class="mt-8 space-y-4 text-ui">
+        <p class="font-medium">Chrome 148 or newer, on desktop</p>
+        <p class="text-ink-muted">
+          No flags are needed. The Summarizer, Language Detector and Prompt APIs are enabled
+          by default. If the model is missing, Chrome downloads it on first use.
+        </p>
+        <p class="text-ink-muted">
+          Check model status at
+          <code class="bg-inset px-1 py-0.5">chrome://on-device-internals</code>.
+        </p>
+      </div>
+
+      <h3 class="mt-8 text-ui font-medium">What the model needs</h3>
+      <dl class="mt-3 space-y-3 text-ui">
+        <div class="flex gap-4">
+          <dt class="w-24 flex-shrink-0 text-ink-muted">Disk</dt>
+          <dd>About 22 GB free for the model.</dd>
         </div>
-        
-        <!-- Footer -->
-        <div class="flex justify-end mt-6">
-          <button
-            class="btn-primary px-4 py-2 text-sm"
-            @click="closeModal"
-          >
-            Got it!
-          </button>
+        <div class="flex gap-4">
+          <dt class="w-24 flex-shrink-0 text-ink-muted">Graphics</dt>
+          <dd>A GPU with more than 4 GB of VRAM, or 16 GB of RAM and 4+ CPU cores.</dd>
         </div>
+        <div class="flex gap-4">
+          <dt class="w-24 flex-shrink-0 text-ink-muted">Connection</dt>
+          <dd>Only for the one-time model download. Readings work offline afterwards.</dd>
+        </div>
+      </dl>
+
+      <div class="mt-8 flex flex-col gap-2 text-ui">
+        <a
+          href="https://developer.chrome.com/docs/ai/built-in"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline underline-offset-2"
+        >
+          Chrome Built-in AI documentation
+        </a>
+        <a
+          href="https://developer.chrome.com/docs/ai/prompt-api"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline underline-offset-2"
+        >
+          Prompt API guide
+        </a>
+      </div>
+
+      <div class="mt-auto pt-10">
+        <button type="button" class="btn btn-primary w-full sm:w-auto" @click="closeModal">
+          Close
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { detectAIBrowser, type AIBrowser } from '../utils/browser'
 
 interface Props {
@@ -142,28 +126,43 @@ interface Emits {
   (e: 'close'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const closeButton = ref<HTMLButtonElement | null>(null)
+const previouslyFocused = ref<HTMLElement | null>(null)
+const browser = ref<AIBrowser>('chrome')
 
 const closeModal = () => {
   emit('close')
 }
 
-// Close modal on Escape key
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    closeModal()
-  }
+  if (event.key === 'Escape') closeModal()
 }
 
-const browser = ref<AIBrowser>('chrome')
+watch(() => props.isOpen, (open) => {
+  if (typeof document === 'undefined') return
+
+  if (open) {
+    previouslyFocused.value = document.activeElement as HTMLElement | null
+    document.addEventListener('keydown', handleKeydown)
+    document.body.style.overflow = 'hidden'
+    nextTick(() => closeButton.value?.focus())
+  } else {
+    document.removeEventListener('keydown', handleKeydown)
+    document.body.style.overflow = ''
+    previouslyFocused.value?.focus()
+  }
+}, { immediate: true })
 
 onMounted(() => {
   browser.value = detectAIBrowser()
-  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
+  if (typeof document === 'undefined') return
   document.removeEventListener('keydown', handleKeydown)
+  document.body.style.overflow = ''
 })
 </script>
