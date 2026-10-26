@@ -9,9 +9,9 @@ A privacy-first, offline-capable PWA for on-device document analysis using the C
 [![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge)](https://docuprism.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![Chrome AI](https://img.shields.io/badge/Chrome-Built--in%20AI-orange?style=for-the-badge&logo=google-chrome)](https://developer.chrome.com/docs/ai/built-in)
-[![Tests](https://img.shields.io/badge/tests-24%2F24%20passing-brightgreen?style=for-the-badge)](tests/README.md)
+[![Tests](https://img.shields.io/badge/tests-34%2F34%20passing-brightgreen?style=for-the-badge)](tests/README.md)
 
-> **Note:** This application requires Chrome Canary/Dev (v127+) with specific flags enabled. See [Setup Instructions](#-getting-started-running-locally) below.
+> **Note:** This application requires desktop Chrome 148+ (or an equivalent Chromium-based browser). The Summarizer and Language Detector APIs are stable since Chrome 138, and the Prompt API used by the chat is stable since Chrome 148. No flags are required. See [Setup Instructions](#-getting-started-running-locally) below.
 
 ## 🎯 The Problem
 
@@ -66,7 +66,6 @@ It's fast, secure, and works anytime, anywhere—even on a plane.
 * **Core AI Engine:** Google Chrome's Built-in AI APIs:
   * [Summarizer API](https://developer.chrome.com/docs/ai/summarizer-api): For the core text summarization feature.
   * [Prompt API](https://developer.chrome.com/docs/ai/prompt-api): To power the interactive "Chat with your Document" functionality.
-  * [Translator API](https://developer.chrome.com/docs/ai/translator-api): To provide multilingual support for summaries.
   * [Language Detection API](https://developer.chrome.com/docs/ai/language-detection): Used internally to ensure summaries are generated in the source text's language.
 
 ## 🔗 Links
@@ -108,19 +107,19 @@ To run this project on your local machine, please follow these steps:
 
 5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-**Enabling Chrome Built-in AI:**
+**Chrome Built-in AI requirements:**
 
-To use DocuPrism, you need to enable Chrome's Built-in AI features:
+To use DocuPrism, you need a Chrome version with the Built-in AI APIs and the on-device model installed:
 
-1. **Use Chrome 138 or newer** (desktop, any channel)
+1. **Use Chrome 148 or newer** (desktop, any channel)
    - Requires ~22 GB of free disk space and a GPU with >4 GB VRAM (or 16 GB RAM and 4+ CPU cores)
+   - Chrome 138+ is enough for summaries: the Summarizer and Language Detector APIs are stable since Chrome 138
+   - The chat needs Chrome 148+, where the Prompt API became stable
 
-2. **Enable Required Flags (chat feature only)**
-   - The Summarizer and Language Detector APIs are stable since Chrome 138 and need no flags
-   - The Prompt API (used by the chat) is not yet stable on the web. Navigate to `chrome://flags` and enable:
-     - `#optimization-guide-on-device-model` → **Enabled BypassPerfRequirement**
-     - `#prompt-api-for-gemini-nano` → **Enabled**
-   - Relaunch Chrome
+2. **No flags required**
+   - All the APIs DocuPrism uses ship enabled by default in current Chrome
+   - If the model is still missing, Chrome downloads it on first use
+   - On older Chrome versions the chat reports the Prompt API as unsupported and summaries keep working
 
 3. **Verify Installation**
    - Open DevTools Console
@@ -128,15 +127,22 @@ To use DocuPrism, you need to enable Chrome's Built-in AI features:
    - Should return `"available"` (or `"downloadable"` if the model still needs to be downloaded)
    - Model status and errors: `chrome://on-device-internals`
 
-**Microsoft Edge (Canary or Dev 138+, Windows/macOS):**
-   - The Summarizer API is enabled by default
-   - For the chat, enable `edge://flags` → **Prompt API for on-device language model** and restart
+**Microsoft Edge (Windows/macOS):**
+   - On recent Stable builds both APIs are enabled by default
+   - On older builds (138+) the Summarizer works out of the box and the chat needs `edge://flags` → **Prompt API for on-device language model** set to **Enabled**, then a restart
    - Model status and device performance class (must be High or greater): `edge://on-device-internals`
 
 4. **Download AI Model (if needed)**
    - The first time you use the app, Chrome may need to download the Gemini Nano model
    - This happens automatically when you click "Summarize"
    - Model size: ~1.5GB (one-time download)
+
+**Experimental: Multi-Token Prediction (MTP)**
+
+Chrome Canary can speed up warm decode throughput by +20–30% with on-device speculative decoding (`chrome://flags/#on-device-model-speculative-decoding`). MTP only runs on greedy sessions:
+   - Summaries benefit automatically: the Summarizer is created without sampling overrides, so it uses greedy sampling by default
+   - The chat creates its Prompt API session with `samplingMode: "most-predictable"` so it is MTP-eligible (the legacy `temperature`/`topK` options are Extensions-only and deprecated on the web)
+   - Note: on stable Chrome, sampling parameters are gated behind the [Sampling Parameters origin trial](https://developer.chrome.com/origintrials). Without the token the option is ignored and the default "balanced" sampling applies, so the chat simply behaves as before
 
 **Available Scripts:**
 
@@ -145,10 +151,10 @@ To use DocuPrism, you need to enable Chrome's Built-in AI features:
 pnpm run dev          # Start development server
 
 # Testing
-pnpm test             # Run unit tests (19 tests)
+pnpm test             # Run unit tests (34 tests)
 pnpm test:ui          # Interactive test UI
 pnpm test:coverage    # Coverage reports
-pnpm test:e2e         # Run E2E tests (5 tests)
+pnpm test:e2e         # Run E2E tests (4 tests)
 pnpm test:e2e:ui      # Playwright UI mode
 
 # Production
@@ -164,24 +170,32 @@ pnpm run postinstall  # Prepare Nuxt
 
 ```
 DocuPrism/
-├── app/                    # Main app entry point
+├── app.vue                 # Nuxt app entry point
 ├── assets/                 # Static assets (CSS, images)
 ├── components/             # Vue components
 │   ├── AIRequirementsModal.vue
+│   ├── ChatInterface.vue  # Chat with document (Prompt API)
 │   ├── DevOfflineInfo.vue
 │   ├── FileUploader.vue
+│   ├── MobileMenu.vue
 │   ├── PWAInstallPrompt.vue
 │   ├── ThemeToggle.vue
 │   └── ToastContainer.vue
 ├── composables/            # Vue composables
-│   ├── useChromeAI.ts     # Chrome AI integration
+│   ├── useChromeAI.ts     # Summarizer + Language Detector integration
+│   ├── useChromePrompt.ts # Prompt API chat sessions
+│   ├── useKeyboardShortcuts.ts
 │   ├── useOfflineStorage.ts
+│   ├── useSummaryCache.ts
 │   ├── useTheme.ts
 │   └── useToast.ts
 ├── config/                 # Configuration files
 │   └── constants.ts
 ├── layouts/                # Nuxt layouts
 │   └── default.vue
+├── middleware/             # Route middleware
+│   ├── check-ai-ready.global.ts
+│   └── ignore-sw.global.ts
 ├── pages/                  # Nuxt pages
 │   ├── index.vue          # Main analysis page
 │   └── history.vue        # History page
@@ -196,12 +210,20 @@ DocuPrism/
 │   ├── chrome-ai.ts
 │   └── storage.ts
 ├── utils/                  # Utility functions
-│   └── errorHandler.ts
+│   ├── browser.ts
+│   ├── documentParser.ts
+│   ├── errorHandler.ts
+│   ├── markdownFormatter.ts
+│   ├── sanitizer.ts
+│   └── validators.ts
 ├── tests/                  # Test suite
 │   ├── composables/        # Unit tests
-│   │   ├── useToast.test.ts
+│   │   ├── useChromeAI.test.ts
+│   │   ├── useChromePrompt.test.ts
+│   │   ├── useKeyboardShortcuts.test.ts
 │   │   ├── useOfflineStorage.test.ts
-│   │   └── useKeyboardShortcuts.test.ts
+│   │   ├── useSummaryCache.test.ts
+│   │   └── useToast.test.ts
 │   ├── e2e/                # E2E tests
 │   │   └── basic-navigation.spec.ts
 │   ├── setup.ts            # Test setup & mocks
@@ -214,7 +236,7 @@ DocuPrism/
 DocuPrism includes a comprehensive test suite to ensure reliability and quality:
 
 ### Unit Tests (Vitest)
-- ✅ **19 tests** covering all composables
+- ✅ **34 tests** covering all composables
 - ✅ **100% passing** with proper isolation
 - ✅ Coverage reports available
 
@@ -224,7 +246,7 @@ pnpm test:coverage     # With coverage
 ```
 
 ### E2E Tests (Playwright)
-- ✅ **5 tests** for basic navigation
+- ✅ **4 tests** for basic navigation
 - ✅ Automated browser testing
 - ✅ CI-ready configuration
 
@@ -236,8 +258,11 @@ pnpm test:e2e:ui       # Interactive mode
 **Test Coverage:**
 - `useToast` - Toast notifications (7 tests)
 - `useOfflineStorage` - Local storage (8 tests)
+- `useSummaryCache` - Summary caching (10 tests)
+- `useChromeAI` - Summarizer integration (2 tests)
+- `useChromePrompt` - Prompt API session and sampling (3 tests)
 - `useKeyboardShortcuts` - Keyboard navigation (4 tests)
-- Basic navigation - Page routing (5 tests)
+- Basic navigation - Page routing (4 tests)
 
 See [`tests/README.md`](tests/README.md) for detailed testing documentation.
 
@@ -302,7 +327,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 - [Chrome Built-in AI Documentation](https://developer.chrome.com/docs/ai/built-in)
 - [Summarizer API Guide](https://developer.chrome.com/docs/ai/summarizer-api)
 - [Prompt API Guide](https://developer.chrome.com/docs/ai/prompt-api)
-- [Chrome AI Origin Trial](https://developer.chrome.com/origintrials/#/view_trial/2971108594873614337)
+- [Language Detector API Guide](https://developer.chrome.com/docs/ai/language-detection)
 - [Nuxt 3 Documentation](https://nuxt.com/)
 - [Vue 3 Documentation](https://vuejs.org/)
 

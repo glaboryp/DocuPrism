@@ -1,6 +1,10 @@
 import { ref, readonly } from 'vue'
 import { createAIError, logError } from '../utils/errorHandler'
-import type { AILanguageModel } from '../types/chrome-ai'
+import type { AILanguageModel, AISamplingMode } from '../types/chrome-ai'
+
+// Greedy sampling: highest determinism and the only sampling mode eligible for
+// Multi-Token Prediction (MTP) in Chrome
+const PROMPT_SAMPLING_MODE: AISamplingMode = 'most-predictable'
 
 export interface ChatMessage {
   id: string
@@ -20,34 +24,29 @@ export const useChromePrompt = () => {
   // Check if Prompt API is supported
   const checkSupport = async (): Promise<boolean> => {
     try {
-      // Check for Prompt API using the same pattern as Summarizer
-      // The API might be at window.ai.languageModel or a future window.LanguageModel
+      // Modern Chrome exposes window.LanguageModel. The legacy window.ai.languageModel
+      // namespace is kept as a fallback for older builds
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const aiWindow = window as any
-      const hasPromptAPI = typeof window !== 'undefined' && (
-        (aiWindow.ai && typeof aiWindow.ai === 'object' && 'languageModel' in aiWindow.ai) ||
-        ('LanguageModel' in window)
-      )
-      
-      if (!hasPromptAPI) {
+      const LanguageModelAPI = aiWindow.LanguageModel || aiWindow.ai?.languageModel
+
+      if (!LanguageModelAPI) {
         error.value = 'Prompt API not available'
         return false
       }
 
-      // Try to check capabilities if available
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const capWindow = window as any
-        if (capWindow.ai?.languageModel?.capabilities) {
-          const capabilities = await capWindow.ai.languageModel.capabilities()
-          
-          if (capabilities.available === 'no') {
+      // availability() replaced the legacy capabilities() method
+      if (typeof LanguageModelAPI.availability === 'function') {
+        try {
+          const availability = await LanguageModelAPI.availability({ samplingMode: PROMPT_SAMPLING_MODE })
+
+          if (availability === 'unavailable') {
             error.value = 'Prompt API not available on this device'
             return false
           }
+        } catch {
+          // Availability check failed, but API might still work
         }
-      } catch {
-        // Capabilities check failed, but API might still work
       }
 
       isSupported.value = true
@@ -77,14 +76,13 @@ export const useChromePrompt = () => {
       }
 
       // Store document context for use in each message
-      // Note: Chrome's LanguageModel API doesn't support systemPrompt yet,
-      // so we need to include the context in each message
+      // The document context is injected in each message instead of a system
+      // prompt, so the same session can be reused across different documents
       documentContext.value = documentContextParam
 
-      // Create the session without system prompt (not supported yet)
+      // Greedy sampling replaces the legacy temperature/topK options on the web
       session.value = await LanguageModelAPI.create({
-        temperature: 0.7,
-        topK: 3
+        samplingMode: PROMPT_SAMPLING_MODE
       })
 
       // Clear previous chat history

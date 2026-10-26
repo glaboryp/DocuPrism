@@ -93,7 +93,7 @@ Update README with new features
 
 ### Testing
 
-* Test your changes in Chrome Canary/Dev
+* Test your changes in desktop Chrome 148+ (the chat) and in an older build to verify the graceful fallbacks
 * Test offline functionality
 * Test on different screen sizes
 * Test dark mode
@@ -116,7 +116,9 @@ DocuPrism/
 ├── config/         # Configuration files
 ├── layouts/        # Nuxt layouts
 ├── pages/          # Nuxt pages (routes)
+├── plugins/        # Nuxt plugins (offline cache)
 ├── sections/       # Page sections (larger components)
+├── tests/          # Unit (Vitest) and E2E (Playwright) tests
 ├── types/          # TypeScript type definitions
 └── utils/          # Utility functions
 ```

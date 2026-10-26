@@ -38,7 +38,7 @@
           <div v-if="browser === 'unsupported'" class="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
             <p class="font-medium text-gray-800 dark:text-gray-200">Open DocuPrism in Google Chrome</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              This browser doesn't include a built-in on-device AI model. Open this page in desktop Chrome 138 or newer (or Microsoft Edge Canary/Dev) to use the AI features.
+              This browser doesn't include a built-in on-device AI model. Open this page in desktop Chrome 148 or newer (or a recent Microsoft Edge) to use the AI features.
             </p>
           </div>
 
@@ -48,8 +48,8 @@
                 <span class="text-xs font-bold text-primary">1</span>
               </div>
               <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Edge Canary or Dev, version 138 or newer</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Windows 10/11 or macOS 13.3+, at least 20 GB of free disk space and a GPU with 5.5 GB of VRAM or more</p>
+                <p class="font-medium text-gray-800 dark:text-gray-200">Microsoft Edge (recent Stable), Windows or macOS</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">macOS 13+, at least 22 GB of free disk space and a GPU with more than 4 GB of VRAM (or 16 GB of RAM and 4+ CPU cores)</p>
               </div>
             </div>
 
@@ -58,10 +58,10 @@
                 <span class="text-xs font-bold text-primary">2</span>
               </div>
               <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Enable Edge Flags (chat only)</p>
+                <p class="font-medium text-gray-800 dark:text-gray-200">No flags needed</p>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <p>Summarization is enabled by default. For the chat, go to <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">edge://flags</code> and set <strong>Prompt API for on-device language model</strong> to <strong>Enabled</strong>.</p>
-                  <p class="mt-1">Then restart Edge and check the device performance class and model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">edge://on-device-internals</code>.</p>
+                  <p>The Summarizer and the Prompt API are enabled by default. If the model is still missing, Edge downloads it on first use.</p>
+                  <p class="mt-1">Check the device performance class and model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">edge://on-device-internals</code>.</p>
                 </div>
               </div>
             </div>
@@ -74,8 +74,8 @@
                 <span class="text-xs font-bold text-primary">1</span>
               </div>
               <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Chrome 138 or newer</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Desktop Chrome with at least 22 GB of free disk space</p>
+                <p class="font-medium text-gray-800 dark:text-gray-200">Chrome 148 or newer</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Desktop Chrome with at least 22 GB of free disk space and a GPU with more than 4 GB of VRAM (or 16 GB of RAM and 4+ CPU cores)</p>
               </div>
             </div>
             
@@ -85,14 +85,10 @@
                 <span class="text-xs font-bold text-primary">2</span>
               </div>
               <div>
-                <p class="font-medium text-gray-800 dark:text-gray-200">Enable Chrome Flags (chat only)</p>
+                <p class="font-medium text-gray-800 dark:text-gray-200">No flags needed</p>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <p>Summarization needs no flags. For the chat, go to <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://flags</code> and enable:</p>
-                  <ul class="list-disc list-inside mt-1 space-y-1">
-                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">optimization-guide-on-device-model</code> (Enabled BypassPerfRequirement)</li>
-                    <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">prompt-api-for-gemini-nano</code> (Enabled)</li>
-                  </ul>
-                  <p class="mt-1">Then relaunch Chrome and check model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://on-device-internals</code>.</p>
+                  <p>The Summarizer, Language Detector and Prompt APIs are enabled by default since Chrome 148. If the model is still missing, Chrome downloads it on first use.</p>
+                  <p class="mt-1">Check model status at <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">chrome://on-device-internals</code>.</p>
                 </div>
               </div>
             </div>
@@ -110,11 +106,11 @@
                 Chrome Built-in AI Documentation
               </a>
               <a
-                href="https://developer.chrome.com/origintrials/#/view_trial/2971108594873614337"
+                href="https://developer.chrome.com/docs/ai/prompt-api"
                 target="_blank"
                 class="text-primary hover:text-primary-hover text-xs underline"
               >
-                Built-in AI Origin Trial
+                Prompt API Guide
               </a>
             </div>
           </div>
