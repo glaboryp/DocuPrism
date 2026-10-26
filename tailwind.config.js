@@ -33,7 +33,7 @@ module.exports = {
       },
       fontSize: {
         meta: ['0.8125rem', { lineHeight: '1.4' }],
-        ui: ['0.9375rem', { lineHeight: '1.45' }],
+        ui: ['1rem', { lineHeight: '1.5' }],
         reading: ['1.1875rem', { lineHeight: '1.65' }],
         title: ['1.75rem', { lineHeight: '1.15', letterSpacing: '-0.015em' }],
         display: [

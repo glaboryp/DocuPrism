@@ -41,9 +41,9 @@ typography:
     letterSpacing: "0em"
   ui:
     fontFamily: "IBM Plex Sans Variable, IBM Plex Sans, system-ui, sans-serif"
-    fontSize: "0.9375rem"
+    fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.45
+    lineHeight: 1.5
     letterSpacing: "0em"
   meta:
     fontFamily: "IBM Plex Sans Variable, IBM Plex Sans, system-ui, sans-serif"
@@ -141,7 +141,7 @@ Dark mode inverts the same roles: ground #141311, sheet #1C1B18, ink #EDEAE1, mu
 - **Display** (400, clamp 36–52 px, 0.98): the one question each screen answers, in `h1`; maximum two lines at any width.
 - **Title** (500, 28 px, 1.15): document, reading and section titles.
 - **Reading** (400, 19 px, 1.65): document text, summaries and assistant messages; 66–70ch measure.
-- **UI** (400/500, 15 px, 1.45): navigation, buttons, fields, tabs.
+- **UI** (400/500, 16 px, 1.5): navigation, buttons, fields, tabs, supporting sentences.
 - **Meta** (400, 13 px, 1.4): counts, dates, model state, captions; tabular figures where numbers align.
 
 No uppercase tracked labels, no monospace outside real code, no italic or coloured word inside a headline.
