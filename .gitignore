@@ -36,3 +36,6 @@ playwright/.cache/
 
 # Vitest
 .vitest/
+
+# Design review artifacts
+.taste-skill/
