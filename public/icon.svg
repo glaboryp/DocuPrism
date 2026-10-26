@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="DocuPrism">
+  <rect width="512" height="512" fill="#EFEEE8"/>
+  <path d="M240 128 408 400H72L240 128Z" fill="none" stroke="#171612" stroke-width="30" stroke-linejoin="round"/>
+  <path d="M76 312h360" stroke="#1B3FD8" stroke-width="36"/>
+</svg>

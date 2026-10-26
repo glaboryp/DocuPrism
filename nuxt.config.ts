@@ -113,10 +113,10 @@ export default defineNuxtConfig({
       name: 'DocuPrism - Document Analysis',
       short_name: 'DocuPrism',
       description: 'Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI',
-      theme_color: '#2563eb',
-      background_color: '#1f2937',
+      theme_color: '#efeee8',
+      background_color: '#efeee8',
       display: 'standalone',
-      orientation: 'portrait-primary',
+      orientation: 'any',
       scope: '/',
       start_url: '/',
       categories: ['productivity', 'utilities', 'education'],
@@ -124,13 +124,19 @@ export default defineNuxtConfig({
       dir: 'ltr',
       icons: [
         {
-          src: 'icon.png',
+          src: 'icon-192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: 'icon-512.png',
           sizes: '512x512',
           type: 'image/png',
           purpose: 'any'
         },
         {
-          src: 'icon.png',
+          src: 'icon-512.png',
           sizes: '512x512',
           type: 'image/png',
           purpose: 'maskable'
@@ -144,7 +150,7 @@ export default defineNuxtConfig({
           url: '/',
           icons: [
             {
-              src: 'icon.png',
+              src: 'icon-192.png',
               sizes: '192x192'
             }
           ]
@@ -194,10 +200,12 @@ export default defineNuxtConfig({
           name: 'description', 
           content: 'Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI' 
         },
-        { name: 'theme-color', content: '#6366f1' }
+        { name: 'theme-color', content: '#efeee8' },
+        { name: 'color-scheme', content: 'light dark' }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/icon.png' }
+        { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
+        { rel: 'apple-touch-icon', href: '/icon-192.png' }
       ]
     }
   }
