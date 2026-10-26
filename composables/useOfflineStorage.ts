@@ -164,11 +164,14 @@ export const useOfflineStorage = () => {
 
     if (diffHours < 1) {
       const diffMinutes = Math.floor(diffMs / (1000 * 60))
-      return `${diffMinutes} minutes ago`
+      if (diffMinutes <= 0) return 'just now'
+      return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`
     } else if (diffHours < 24) {
-      return `${Math.floor(diffHours)} hours ago`
+      const hours = Math.floor(diffHours)
+      return hours === 1 ? '1 hour ago' : `${hours} hours ago`
     } else if (diffDays < 7) {
-      return `${Math.floor(diffDays)} days ago`
+      const days = Math.floor(diffDays)
+      return days === 1 ? '1 day ago' : `${days} days ago`
     } else {
       return date.toLocaleDateString()
     }
