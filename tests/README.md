@@ -14,8 +14,11 @@ tests/
 │   ├── useChromePrompt.test.ts
 │   ├── useKeyboardShortcuts.test.ts
 │   ├── useOfflineStorage.test.ts
+│   ├── useSemanticGates.test.ts
 │   ├── useSummaryCache.test.ts
 │   └── useToast.test.ts
+├── utils/                            # Unit tests for utilities
+│   └── semanticChecks.test.ts
 └── e2e/                              # End-to-end tests
     └── basic-navigation.spec.ts
 ```
@@ -72,14 +75,16 @@ pnpm test:e2e basic-navigation.spec.ts
 
 ## Test Coverage
 
-### Unit Tests (34 tests)
+### Unit Tests (57 tests)
 
 - ✅ **useToast**: Toast notifications (7 tests)
 - ✅ **useOfflineStorage**: Local storage operations (8 tests)
 - ✅ **useSummaryCache**: Summary caching (10 tests)
 - ✅ **useChromeAI**: Summarizer integration (2 tests)
-- ✅ **useChromePrompt**: Prompt API session and sampling mode (3 tests)
+- ✅ **useChromePrompt**: Prompt API session, sampling mode and context routing (4 tests)
 - ✅ **useKeyboardShortcuts**: Keyboard navigation and shortcuts (4 tests)
+- ✅ **semanticChecks**: Quality, sensitive-data and routing heuristics (15 tests)
+- ✅ **useSemanticGates**: Heuristics plus Decisions API fallback (7 tests)
 
 ### E2E Tests
 
@@ -121,6 +126,7 @@ The test setup (`tests/setup.ts`) includes mocks for:
 - `window.Summarizer` - AI summarization API
 - `window.LanguageModel` - Prompt API used by the chat (mocked per test file)
 - `window.LanguageDetector` - Language detection API
+- `window.DecisionModel` - Experimental Decisions API (mocked per test file)
 - `navigator.clipboard` - Clipboard operations
 - `localStorage` - Local storage
 - `navigator.userActivation` - User activation state

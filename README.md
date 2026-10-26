@@ -9,7 +9,7 @@ A privacy-first, offline-capable PWA for on-device document analysis using the C
 [![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge)](https://docuprism.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![Chrome AI](https://img.shields.io/badge/Chrome-Built--in%20AI-orange?style=for-the-badge&logo=google-chrome)](https://developer.chrome.com/docs/ai/built-in)
-[![Tests](https://img.shields.io/badge/tests-34%2F34%20passing-brightgreen?style=for-the-badge)](tests/README.md)
+[![Tests](https://img.shields.io/badge/tests-57%2F57%20passing-brightgreen?style=for-the-badge)](tests/README.md)
 
 > **Note:** This application requires desktop Chrome 148+ (or an equivalent Chromium-based browser). The Summarizer and Language Detector APIs are stable since Chrome 138, and the Prompt API used by the chat is stable since Chrome 148. No flags are required. See [Setup Instructions](#-getting-started-running-locally) below.
 
@@ -151,7 +151,7 @@ Chrome Canary can speed up warm decode throughput by +20–30% with on-device sp
 pnpm run dev          # Start development server
 
 # Testing
-pnpm test             # Run unit tests (34 tests)
+pnpm test             # Run unit tests (57 tests)
 pnpm test:ui          # Interactive test UI
 pnpm test:coverage    # Coverage reports
 pnpm test:e2e         # Run E2E tests (4 tests)
@@ -179,6 +179,7 @@ DocuPrism/
 │   ├── FileUploader.vue
 │   ├── MobileMenu.vue
 │   ├── PWAInstallPrompt.vue
+│   ├── SensitiveDataDialog.vue # Confirmation before saving sensitive data
 │   ├── ThemeToggle.vue
 │   └── ToastContainer.vue
 ├── composables/            # Vue composables
@@ -186,6 +187,7 @@ DocuPrism/
 │   ├── useChromePrompt.ts # Prompt API chat sessions
 │   ├── useKeyboardShortcuts.ts
 │   ├── useOfflineStorage.ts
+│   ├── useSemanticGates.ts # Quality + sensitive-data pre-checks
 │   ├── useSummaryCache.ts
 │   ├── useTheme.ts
 │   └── useToast.ts
@@ -211,10 +213,12 @@ DocuPrism/
 │   └── storage.ts
 ├── utils/                  # Utility functions
 │   ├── browser.ts
+│   ├── decisionModel.ts   # Optional Decisions API bridge
 │   ├── documentParser.ts
 │   ├── errorHandler.ts
 │   ├── markdownFormatter.ts
 │   ├── sanitizer.ts
+│   ├── semanticChecks.ts  # Local quality, PII and routing heuristics
 │   └── validators.ts
 ├── tests/                  # Test suite
 │   ├── composables/        # Unit tests
@@ -222,8 +226,11 @@ DocuPrism/
 │   │   ├── useChromePrompt.test.ts
 │   │   ├── useKeyboardShortcuts.test.ts
 │   │   ├── useOfflineStorage.test.ts
+│   │   ├── useSemanticGates.test.ts
 │   │   ├── useSummaryCache.test.ts
 │   │   └── useToast.test.ts
+│   ├── utils/              # Unit tests for utilities
+│   │   └── semanticChecks.test.ts
 │   ├── e2e/                # E2E tests
 │   │   └── basic-navigation.spec.ts
 │   ├── setup.ts            # Test setup & mocks
@@ -231,12 +238,23 @@ DocuPrism/
 └── nuxt.config.ts         # Nuxt configuration
 ```
 
+## 🧠 Semantic pre-checks
+
+Two cheap on-device checks run before the generative model gets involved:
+
+- **Document quality** (`utils/semanticChecks.ts`): flags empty or garbled extractions, code/table dumps and placeholder repetition. The UI shows a warning but never blocks summarizing, since the user may know better.
+- **Sensitive data**: emails, API keys, private keys, passwords and card numbers (Luhn-checked) are detected before an analysis is saved to local history. Previews are redacted and the app asks for confirmation instead of persisting silently.
+
+Chat is routed too: obvious small talk (`hi`, `thanks`, `hola`) skips the document context, while anything mentioning the document keeps it. The check is deliberately conservative so a misclassification cannot drop context from a real question.
+
+When Chrome exposes the experimental Decisions API (`window.DecisionModel`, behind `chrome://flags/#ai-decisions-api` in Canary), `utils/decisionModel.ts` runs the same questions through it and layers the confidence-gated answers on top of the heuristics. The API is still an intent to prototype, so any failure falls back to the local checks and stable Chrome behaves exactly as before.
+
 ## 🧪 Testing
 
 DocuPrism includes a comprehensive test suite to ensure reliability and quality:
 
 ### Unit Tests (Vitest)
-- ✅ **34 tests** covering all composables
+- ✅ **57 tests** covering composables and utilities
 - ✅ **100% passing** with proper isolation
 - ✅ Coverage reports available
 
@@ -260,8 +278,10 @@ pnpm test:e2e:ui       # Interactive mode
 - `useOfflineStorage` - Local storage (8 tests)
 - `useSummaryCache` - Summary caching (10 tests)
 - `useChromeAI` - Summarizer integration (2 tests)
-- `useChromePrompt` - Prompt API session and sampling (3 tests)
+- `useChromePrompt` - Prompt API session, sampling and context routing (4 tests)
 - `useKeyboardShortcuts` - Keyboard navigation (4 tests)
+- `semanticChecks` - Quality, PII and routing heuristics (15 tests)
+- `useSemanticGates` - Heuristics + Decisions API fallback (7 tests)
 - Basic navigation - Page routing (4 tests)
 
 See [`tests/README.md`](tests/README.md) for detailed testing documentation.

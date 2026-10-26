@@ -43,4 +43,4 @@ pnpm test:e2e:debug
 
 ---
 
-**Nota**: los tests unitarios (Vitest) están todos pasando (34/34 ✓).
+**Nota**: los tests unitarios (Vitest) están todos pasando (57/57 ✓).

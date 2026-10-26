@@ -52,4 +52,24 @@ describe('useChromePrompt', () => {
     await expect(prompt.checkSupport()).resolves.toBe(false)
     expect(prompt.error.value).toBe('Prompt API not available on this device')
   })
+
+  it('skips the document context for small talk but keeps it for real questions', async () => {
+    const promptStreaming = vi.fn<(prompt: string) => AsyncGenerator<string>>()
+    promptStreaming.mockImplementation(async function* () { yield 'ok' })
+    create.mockResolvedValueOnce({
+      prompt: vi.fn(),
+      promptStreaming,
+      countPromptTokens: vi.fn(),
+      destroy: vi.fn()
+    })
+    const prompt = useChromePrompt()
+
+    await prompt.createSession('Quarterly revenue grew across every region.')
+
+    await prompt.sendMessageStreaming('hola', () => {})
+    expect(promptStreaming.mock.calls[0]?.[0]).toBe('hola')
+
+    await prompt.sendMessageStreaming('What does the document say about revenue?', () => {})
+    expect(promptStreaming.mock.calls[1]?.[0]).toContain('Quarterly revenue grew across every region.')
+  })
 })
