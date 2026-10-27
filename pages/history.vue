@@ -122,78 +122,80 @@
       </template>
     </section>
 
-    <!-- Detail sheet -->
-    <div
-      v-if="selectedAnalysis"
-      class="fixed inset-0 z-[120] flex items-end justify-center sm:items-stretch sm:justify-end"
-    >
+    <!-- Detail sheet, teleported so the header and footer cannot paint over it -->
+    <Teleport to="body">
       <div
-        class="absolute inset-0 bg-black/40"
-        aria-hidden="true"
-        @click="closeModal"
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="history-detail-title"
-        class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto bg-sheet p-6 sm:h-full sm:max-h-none sm:w-[640px] sm:p-10"
-        @click.stop
+        v-if="selectedAnalysis"
+        class="fixed inset-0 z-[120] flex items-end justify-center sm:items-stretch sm:justify-end"
       >
-        <div class="flex items-start justify-between gap-6">
-          <div>
-            <h2 id="history-detail-title" class="font-read text-title">
-              Saved reading
-            </h2>
-            <p class="meta mt-2">
-              {{ formatTimestamp(selectedAnalysis.timestamp) }} ·
-              {{ selectedAnalysis.options.type }} ·
-              {{ selectedAnalysis.options.length }}
-            </p>
-          </div>
-          <button
-            ref="detailCloseButton"
-            type="button"
-            class="-mr-2 inline-flex h-11 w-11 flex-shrink-0 items-center justify-center text-ink transition-colors hover:bg-inset"
-            aria-label="Close"
-            @click="closeModal"
-          >
-            <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
+        <div
+          class="absolute inset-0 bg-black/40"
+          aria-hidden="true"
+          @click="closeModal"
+        />
 
-        <div class="mt-8">
-          <h3 class="meta">Original</h3>
-          <div class="mt-2 max-h-56 overflow-y-auto bg-inset p-4 whitespace-pre-wrap text-ui text-ink-muted">
-            {{ selectedAnalysis.inputText }}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="history-detail-title"
+          class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto bg-sheet p-6 sm:h-full sm:max-h-none sm:w-[640px] sm:p-10"
+          @click.stop
+        >
+          <div class="flex items-start justify-between gap-6">
+            <div>
+              <h2 id="history-detail-title" class="font-read text-title">
+                Saved reading
+              </h2>
+              <p class="meta mt-2">
+                {{ formatTimestamp(selectedAnalysis.timestamp) }} ·
+                {{ selectedAnalysis.options.type }} ·
+                {{ selectedAnalysis.options.length }}
+              </p>
+            </div>
+            <button
+              ref="detailCloseButton"
+              type="button"
+              class="-mr-2 inline-flex h-11 w-11 flex-shrink-0 items-center justify-center text-ink transition-colors hover:bg-inset"
+              aria-label="Close"
+              @click="closeModal"
+            >
+              <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
-        </div>
 
-        <div class="mt-8">
-          <h3 class="meta">Summary</h3>
-          <div class="mt-2 whitespace-pre-wrap font-read text-[17px] leading-[1.65]">
-            {{ selectedAnalysis.summary }}
+          <div class="mt-8">
+            <h3 class="meta">Original</h3>
+            <div class="mt-2 max-h-56 overflow-y-auto bg-inset p-4 whitespace-pre-wrap text-ui text-ink-muted">
+              {{ selectedAnalysis.inputText }}
+            </div>
           </div>
-        </div>
 
-        <div class="mt-auto flex flex-wrap items-center gap-x-6 gap-y-2 pt-10">
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="copySummary(selectedAnalysis)"
-          >
-            Copy summary
-          </button>
-          <button
-            type="button"
-            class="btn-danger"
-            @click="deleteSelected"
-          >
-            Delete
-          </button>
+          <div class="mt-8">
+            <h3 class="meta">Summary</h3>
+            <div class="mt-2 whitespace-pre-wrap font-read text-[17px] leading-[1.65]">
+              {{ selectedAnalysis.summary }}
+            </div>
+          </div>
+
+          <div class="mt-auto flex flex-wrap items-center gap-x-6 gap-y-2 pt-10">
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="copySummary(selectedAnalysis)"
+            >
+              Copy summary
+            </button>
+            <button
+              type="button"
+              class="btn-danger"
+              @click="deleteSelected"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </main>
 </template>
 
