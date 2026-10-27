@@ -76,8 +76,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, defineAsyncComponent } from 'vue'
+import { computed, ref, watch, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
+import { detectAIBrowser } from '../utils/browser'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import BrandMark from '../components/BrandMark.vue'
 
@@ -88,6 +89,18 @@ defineEmits(['toggle-mobile-menu'])
 const { isSupported, isCheckingSupport } = useChromeAI()
 
 const showModal = ref(false)
+
+// The browser cannot host the model at all (Brave and friends, or a Chromium
+// without the API): open the requirements sheet as soon as the check settles.
+const browserCanRunModel = () =>
+  detectAIBrowser() !== 'unsupported' &&
+  typeof window !== 'undefined' &&
+  'Summarizer' in window
+
+watch(isCheckingSupport, (checking) => {
+  if (checking || browserCanRunModel()) return
+  showModal.value = true
+})
 
 const statusLabel = computed(() => {
   if (isCheckingSupport.value) return 'Checking model…'

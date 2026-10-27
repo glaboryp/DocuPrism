@@ -1,10 +1,21 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
+
+// Browsers without the model open the requirements sheet on arrival
+const closeRequirements = async (page: Page) => {
+  const sheet = page.getByRole('dialog', { name: /cannot run the model/i })
+  await sheet.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+  if (await sheet.isVisible().catch(() => false)) {
+    await page.keyboard.press('Escape')
+    await expect(sheet).toBeHidden()
+  }
+}
 
 test.describe('Basic Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     // Wait for page to load
     await page.waitForSelector('main', { state: 'visible' })
+    await closeRequirements(page)
   })
 
   test('should load home page', async ({ page }) => {
