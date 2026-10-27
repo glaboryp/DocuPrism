@@ -1,138 +1,494 @@
+@import '@fontsource-variable/literata/index.css';
+@import '@fontsource-variable/ibm-plex-sans/index.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --ground: #efefeb;
+    --sheet: #f8f8f4;
+    --inset: #e7e7e1;
+    --ink: #171614;
+    --ink-muted: #5b5b55;
+    --ink-hover: #2e2c27;
+    --rule: #d6d6cf;
+    --accent: #1b3fd8;
+    --danger: #a3231c;
+    --success: #1f6b3a;
+    color-scheme: light;
+  }
+
+  .dark {
+    --ground: #141413;
+    --sheet: #1c1c19;
+    --inset: #252521;
+    --ink: #edece7;
+    --ink-muted: #a8a8a0;
+    --ink-hover: #f7f6f0;
+    --rule: #34342e;
+    --accent: #93a9ff;
+    --danger: #f08a80;
+    --success: #7fc79b;
+    color-scheme: dark;
+  }
+
   html {
-    @apply scroll-smooth;
+    scroll-behavior: smooth;
   }
-  
+
   body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased;
+    @apply bg-ground text-ink font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: background-color 160ms ease, color 160ms ease;
   }
-  
-  /* Prevent theme transition flash on page load */
-  body {
-    transition: background-color 300ms ease, color 300ms ease;
-  }
-  
-  /* Ensure no transition during initial load */
-  .no-transitions * {
+
+  .no-transitions *,
+  .no-transitions *::before,
+  .no-transitions *::after {
     transition: none !important;
+    animation: none !important;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--sheet);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  input[type='radio'] {
+    accent-color: var(--ink);
+  }
+
+  ::placeholder {
+    color: var(--ink-muted);
+    opacity: 1;
+  }
+
+  /* Thin, quiet scrollbars; the page still scrolls normally without this. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
   }
 }
 
 @layer components {
+  .frame {
+    width: 100%;
+    max-width: 1400px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 4vw, 56px);
+  }
+
+  .meta {
+    @apply text-meta text-ink-muted;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Actions */
+  .btn {
+    @apply inline-flex h-11 items-center justify-center gap-2 px-5 text-ui font-medium transition-colors;
+    border-radius: 0;
+  }
+
   .btn-primary {
-    @apply bg-primary hover:bg-primary-hover disabled:bg-primary-300 disabled:cursor-not-allowed text-white font-medium py-2 px-3 sm:px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg;
+    background: var(--ink);
+    color: var(--sheet);
   }
-  
-  .btn-secondary {
-    @apply bg-accent-50 hover:bg-accent-100 disabled:bg-gray-100 disabled:cursor-not-allowed text-accent font-medium py-2 px-3 sm:px-4 rounded-lg transition-colors duration-200 border border-accent-200 shadow-sm hover:shadow-md;
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--ink-hover);
   }
-  
-  .card {
-    @apply bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 transition-colors duration-300;
+
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(1px);
   }
-  
-  .input-field {
-    @apply w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-primary-400 transition-all duration-200 shadow-sm focus:shadow-md;
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
-  
-  .textarea-field {
-    @apply w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-300 focus:border-primary-300 transition-all duration-200 resize-none shadow-sm focus:shadow-md outline-none;
-    min-height: 150px;
+
+  .btn-text {
+    @apply inline-flex h-11 items-center text-ui font-medium transition-colors;
+    color: var(--ink);
+    border-radius: 0;
   }
-  
+
+  .btn-text:hover:not(:disabled) {
+    color: var(--ink-muted);
+  }
+
+  .btn-text:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-quiet {
+    @apply inline-flex h-9 items-center px-2 text-meta transition-colors;
+    color: var(--ink-muted);
+    border-radius: 0;
+  }
+
+  .btn-quiet:hover {
+    color: var(--ink);
+  }
+
+  .btn-danger {
+    @apply inline-flex h-9 items-center px-2 text-meta transition-colors;
+    color: var(--danger);
+    border-radius: 0;
+  }
+
+  .btn-danger:hover {
+    opacity: 0.75;
+  }
+
+  /* Form fields */
+  .field-label {
+    @apply mb-2 block text-meta text-ink-muted;
+  }
+
+  .field {
+    @apply h-10 w-full px-3 text-ui transition-colors;
+    background: var(--inset);
+    color: var(--ink);
+    border: 1px solid transparent;
+    border-radius: 0;
+  }
+
+  .field:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .select-field {
+    @apply h-10 w-full pl-3 pr-9 text-ui transition-colors appearance-none cursor-pointer;
+    background-color: var(--inset);
+    color: var(--ink);
+    border: 1px solid transparent;
+    border-radius: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%23171612' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+  }
+
+  .select-field:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .select-field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .dark .select-field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%23EDEAE1' stroke-width='1.5'/%3E%3C/svg%3E");
+  }
+
+  .doc-input:focus-visible {
+    outline: none;
+    box-shadow: inset 4px 0 0 var(--accent);
+  }
+
+  .doc-input {
+    @apply block w-full resize-none bg-transparent;
+    min-height: 280px;
+    padding: 28px;
+    font-family: 'Literata Variable', Literata, Georgia, serif;
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--ink);
+    border: 0;
+    outline: none;
+  }
+
   @media (min-width: 640px) {
-    .textarea-field {
-      min-height: 200px;
+    .doc-input {
+      min-height: 360px;
+      padding: 36px 40px;
     }
   }
-  
-  /* Large textarea variant for bigger screens */
-  @media (min-width: 640px) and (min-height: 800px) {
-    .textarea-field {
-      min-height: 300px;
-    }
-  }
-  
-  @media (min-width: 640px) and (min-height: 1080px) {
-    .textarea-field {
+
+  @media (min-width: 1024px) {
+    .doc-input {
       min-height: 400px;
     }
   }
-  
-  .select-field {
-    @apply w-full px-3 sm:px-4 py-2 pr-8 sm:pr-10 text-sm sm:text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-300 focus:border-primary-300 transition-all duration-200 shadow-sm focus:shadow-md outline-none appearance-none cursor-pointer;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
+
+  /* Surfaces. Pages, not cards: flat tone steps, square corners. */
+  .sheet {
+    background: var(--sheet);
+    border-radius: 0;
   }
-  
-  .dark .select-field {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+
+  .reading {
+    font-family: 'Literata Variable', Literata, Georgia, serif;
+    font-size: 19px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 68ch;
   }
-  
-  /* Badge components using custom colors */
-  .badge-success {
-    @apply bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-sm font-medium;
+
+  .reading > * + * {
+    margin-top: 1em;
   }
-  
-  .badge-warning {
-    @apply bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-medium;
+
+  .reading h1,
+  .reading h2,
+  .reading h3 {
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin-top: 1.6em;
   }
-  
-  .badge-error {
-    @apply bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 px-3 py-1 rounded-full text-sm font-medium;
+
+  .reading h1 {
+    font-size: 1.6rem;
   }
-  
-  /* Enhanced status badges */
-  .status-badge {
-    @apply flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-all duration-200;
+
+  .reading h2 {
+    font-size: 1.35rem;
   }
-  
-  /* Clickable status badge button */
-  button.status-badge {
-    @apply hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900;
+
+  .reading h3 {
+    font-size: 1.15rem;
   }
-  
-  button.status-badge.error {
-    @apply focus:ring-red-500;
+
+  .reading ul,
+  .reading ol {
+    padding-left: 1.25em;
   }
-  
-  .status-badge.success {
-    @apply bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400;
+
+  .reading ul {
+    list-style: disc;
   }
-  
-  .status-badge.warning {
-    @apply bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400;
+
+  .reading ol {
+    list-style: decimal;
   }
-  
-  .status-badge.error {
-    @apply bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400;
+
+  .reading li + li {
+    margin-top: 0.35em;
   }
-  
-  /* Loading spinner using primary color */
-  .spinner {
-    @apply w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin;
+
+  .reading strong {
+    font-weight: 600;
   }
-  
-  /* Fade transition for overlay */
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: opacity 0.3s ease;
+
+  .reading a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
-  
-  .fade-enter-from,
-  .fade-leave-to {
-    opacity: 0;
+
+  .reading a:hover {
+    color: var(--accent);
+  }
+
+  .reading blockquote {
+    border-left: 2px solid var(--ink);
+    padding-left: 16px;
+    color: var(--ink-muted);
+  }
+
+  .reading code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    background: var(--inset);
+    padding: 0.1em 0.3em;
+  }
+
+  .reading pre {
+    background: var(--inset);
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 15px;
+  }
+
+  .reading pre code {
+    background: transparent;
+    padding: 0;
+  }
+
+  .reading hr {
+    border: 0;
+    height: 1px;
+    background: var(--rule);
+    margin-block: 1.8em;
+  }
+
+  .reading table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 15px;
+  }
+
+  .reading th,
+  .reading td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* Tabs are text plus a solid rule, never pills. */
+  .tab {
+    @apply inline-flex h-11 items-center text-ui transition-colors;
+    color: var(--ink-muted);
+    border-radius: 0;
+    box-shadow: inset 0 -2px 0 transparent;
+  }
+
+  .tab:hover {
+    color: var(--ink);
+  }
+
+  .tab[aria-selected='true'] {
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--ink);
+  }
+
+  .notice {
+    @apply py-2 pl-3 text-meta;
+    border-left: 2px solid var(--danger);
+    color: var(--ink);
+  }
+
+  .meter {
+    height: 2px;
+    width: 100%;
+    background: var(--inset);
+    overflow: hidden;
+  }
+
+  .meter > span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transition: width 300ms ease;
+  }
+
+  .row {
+    @apply flex w-full items-start gap-4 py-4 text-left transition-colors;
+    border-top: 1px solid var(--rule);
+  }
+
+  .row:hover {
+    background: var(--inset);
+  }
+
+  .skip-link {
+    @apply sr-only;
+  }
+
+  .skip-link:focus {
+    @apply not-sr-only fixed left-4 top-4 z-[200] inline-flex h-11 items-center px-4 text-ui font-medium;
+    background: var(--ink);
+    color: var(--sheet);
+    border-radius: 0;
+  }
+
+  /* Load and state entrances */
+  .reveal {
+    animation: rise 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .reveal-1 {
+    animation-delay: 60ms;
+  }
+
+  .reveal-2 {
+    animation-delay: 120ms;
+  }
+
+  .reveal-3 {
+    animation-delay: 180ms;
+  }
+
+  .reading.is-fresh > * {
+    animation: rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .reading.is-fresh > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+
+  .reading.is-fresh > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  .reading.is-fresh > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .reading.is-fresh > :nth-child(5) {
+    animation-delay: 160ms;
+  }
+
+  .reading.is-fresh > :nth-child(n + 6) {
+    animation-delay: 200ms;
+  }
+
+  .beam {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: left;
+    animation: beam 900ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .progress {
+    height: 2px;
+    width: 100%;
+    background: var(--inset);
+    overflow: hidden;
+  }
+
+  .progress > span {
+    display: block;
+    height: 100%;
+    width: 34%;
+    background: var(--accent);
+    animation: progress 1.6s ease-in-out infinite;
   }
 }
 
 @layer utilities {
-  /* Screen reader only - hides content visually but keeps it accessible */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -144,14 +500,72 @@
     white-space: nowrap;
     border-width: 0;
   }
-  
-  /* Focus visible for keyboard navigation */
-  .focus-visible:focus {
-    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
+
+  .not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
-  
-  /* Skip to main content link */
-  .skip-link {
-    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:shadow-lg;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes beam {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  70% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reading.is-fresh > *,
+  .reveal,
+  .beam {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .progress > span {
+    animation: none !important;
+    width: 100% !important;
   }
 }

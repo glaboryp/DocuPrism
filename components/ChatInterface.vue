@@ -1,171 +1,136 @@
 <template>
-  <div class="flex flex-col" :style="isPromptApiAvailable ? { height: chatHeight } : {}">
-    <!-- Chat Header -->
-    <div class="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
-      <div class="flex items-center space-x-2">
-        <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-        <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Chat with Document</h3>
+  <div class="flex h-[440px] flex-col lg:h-[520px]">
+    <!-- Prompt API unavailable -->
+    <div v-if="!isPromptApiAvailable" class="flex-1 p-6 sm:p-8">
+      <p class="font-read text-[24px] leading-tight">Chat is not available here.</p>
+      <p class="mt-3 max-w-[40ch] text-ui text-ink">
+        The chat needs Chrome's Prompt API. Summaries may still work in this browser.
+      </p>
+
+      <div class="mt-6 space-y-3 text-ui">
+        <p v-if="browser === 'unsupported'">
+          Open this page in <strong>desktop Chrome 148 or newer</strong> (or a recent Microsoft Edge).
+          This browser does not include a built-in on-device model.
+        </p>
+        <template v-else-if="browser === 'edge'">
+          <p>Update to a recent <strong>Microsoft Edge Stable</strong> on Windows or macOS. No flags are needed.</p>
+          <p class="meta">
+            Check the model and device class at
+            <code class="bg-inset px-1">edge://on-device-internals</code>.
+          </p>
+        </template>
+        <template v-else>
+          <p>Use <strong>Chrome 148 or newer</strong> on desktop. No flags are needed.</p>
+          <p class="meta">
+            Check <code class="bg-inset px-1">chrome://version</code>, then the model at
+            <code class="bg-inset px-1">chrome://on-device-internals</code>.
+          </p>
+          <p class="meta">
+            The model needs about 22 GB of free disk and a GPU with more than 4 GB of VRAM
+            (or 16 GB of RAM and 4+ CPU cores).
+          </p>
+        </template>
       </div>
-      <button
-        v-if="chatHistory.length > 0 && isPromptApiAvailable"
-        class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        @click="handleClearChat"
+
+      <a
+        href="https://developer.chrome.com/docs/ai/prompt-api"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-6 inline-block text-ui underline underline-offset-2"
       >
-        <Icon name="heroicons:trash" class="w-4 h-4" />
-      </button>
+        Prompt API guide
+      </a>
     </div>
 
-    <!-- Prompt API Not Available Warning (replaces entire chat area) -->
-    <div v-if="!isPromptApiAvailable" class="p-3 sm:p-6 flex items-start justify-center">
-      <div class="max-w-2xl w-full">
-        <div class="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4 sm:p-6">
-          <Icon name="heroicons:exclamation-triangle" class="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-3 sm:mb-4" />
-          <h4 class="text-base sm:text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-2 sm:mb-3 text-center">
-            Prompt API Not Available
-          </h4>
-          <p v-if="browser === 'unsupported'" class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 text-center">
-            The chat feature uses a browser's built-in on-device AI, which isn't available in this browser.
-            Open this page in <strong>Google Chrome 148 or newer</strong> on desktop (or a recent Microsoft Edge) to use it.
-          </p>
-          <template v-else-if="browser === 'edge'">
-            <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
-              The chat feature needs Edge's Prompt API, which ships enabled by default from Chromium 148.
-            </p>
-            <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-              <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To fix it:</p>
-              <ol class="text-xs text-gray-700 dark:text-gray-300 space-y-1.5 sm:space-y-2 list-decimal list-inside">
-                <li>Update to a recent <strong>Microsoft Edge Stable</strong> on Windows or macOS</li>
-                <li>No flags are needed: the Prompt API and the Summarizer are enabled by default</li>
-                <li>If the model is still downloading, restart Edge and wait for it to finish</li>
-                <li>Check <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">edge://on-device-internals</code>: the device performance class must be <strong>High</strong> or greater</li>
-              </ol>
-            </div>
-          </template>
-          <template v-else>
-          <p class="text-xs sm:text-sm text-yellow-700 dark:text-yellow-400 mb-3 sm:mb-4 text-center">
-            The chat feature needs Chrome's Prompt API, which is stable and enabled by default since Chrome 148.
-          </p>
-          <div class="text-left bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-            <p class="text-xs font-semibold text-gray-900 dark:text-white mb-2">To fix it:</p>
-            <ol class="text-xs text-gray-700 dark:text-gray-300 space-y-1.5 sm:space-y-2 list-decimal list-inside">
-              <li>Use <strong>Chrome 148 or newer</strong> on desktop (check <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">chrome://version</code>)</li>
-              <li>No flags are needed: the Prompt API and the Summarizer are enabled by default</li>
-              <li>If the model is still downloading, wait for it to finish in <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">chrome://on-device-internals</code></li>
-              <li>Verify in console: <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">await LanguageModel.availability()</code> should return <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">available</code> or <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">downloadable</code></li>
-            </ol>
-          </div>
-          <div class="text-left bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
-            <p class="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">Quick Test:</p>
-            <p class="text-xs text-blue-700 dark:text-blue-400">
-              Open DevTools Console and type: <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">typeof LanguageModel</code>
-            </p>
-            <p class="text-xs text-blue-600 dark:text-blue-500 mt-1">
-              If it shows <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">"undefined"</code>, your Chrome is too old: update to Chrome 148 or newer. You can also check the model download at <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded text-xs">chrome://on-device-internals</code>.
-            </p>
-          </div>
-          <p class="text-xs text-yellow-600 dark:text-yellow-500 text-center">
-            <strong>Note:</strong> The model needs about 22 GB of free disk space and a GPU with more than 4 GB of VRAM (or 16 GB of RAM and 4+ CPU cores).
-          </p>
-          </template>
-        </div>
-      </div>
-    </div>
-
-    <!-- Chat Content (only shown when API is available) -->
     <template v-else>
-      <!-- Chat Messages -->
-      <div
-        ref="chatContainer"
-        class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0"
-      >
-        <!-- Empty State -->
-        <div v-if="chatHistory.length === 0" class="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
-          <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 dark:text-gray-600 mb-3 sm:mb-4" />
-          <h4 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Start a conversation
-          </h4>
-          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-sm">
-            Ask questions about your document and get instant answers powered by AI
+      <div class="flex items-center justify-between gap-4 px-6 pt-5 sm:px-8">
+        <p class="meta">Answers stay on this device</p>
+        <button
+          v-if="chatHistory.length > 0"
+          type="button"
+          class="btn-quiet"
+          @click="handleClearChat"
+        >
+          Clear chat
+        </button>
+      </div>
+
+      <div ref="chatContainer" class="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5 sm:px-8">
+        <div v-if="chatHistory.length === 0 && !streamingMessage" class="flex h-full flex-col justify-center">
+          <p class="font-read text-[24px] leading-tight">Ask about this document.</p>
+          <p class="mt-3 max-w-[38ch] text-ui text-ink">
+            Questions use the text in the document pane. If the document changes, the chat starts again.
+          </p>
+          <div class="mt-6 flex flex-col items-start gap-1">
+            <button
+              v-for="question in suggestions"
+              :key="question"
+              type="button"
+              class="text-left text-ui text-ink transition-colors hover:text-ink-muted"
+              :disabled="!hasDocument"
+              @click="useSuggestion(question)"
+            >
+              {{ question }}
+            </button>
+          </div>
+          <p v-if="!hasDocument" class="meta mt-6">
+            Add a document in the left page to begin.
           </p>
         </div>
 
-        <!-- Messages -->
         <div
           v-for="message in chatHistory"
           :key="message.id"
-          :class="[
-            'flex',
-            message.role === 'user' ? 'justify-end' : 'justify-start'
-          ]"
+          class="max-w-[62ch]"
         >
+          <p class="meta">{{ message.role === 'user' ? 'You' : 'DocuPrism' }}</p>
+          <p v-if="message.role === 'user'" class="mt-1 whitespace-pre-wrap text-ui">
+            {{ message.content }}
+          </p>
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <div
-            :class="[
-              'max-w-[85%] sm:max-w-[80%] rounded-lg px-3 sm:px-4 py-2',
-              message.role === 'user'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-            ]"
-          >
-            <!-- User messages: plain text -->
-            <p v-if="message.role === 'user'" class="text-sm whitespace-pre-wrap">
-              {{ message.content }}
-            </p>
-            <!-- Assistant messages: render markdown (sanitized via formatMarkdown utility) -->
-            <div 
-              v-else 
-              class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
-              v-html="formatMarkdown(message.content)" 
-            />
-            <span class="text-xs opacity-70 mt-1 block">
-              {{ formatTime(message.timestamp) }}
-            </span>
-          </div>
+            v-else
+            class="reading mt-1 text-[17px] leading-[1.6]"
+            v-html="formatMarkdown(message.content)"
+          />
+          <p class="meta mt-1 tabular">{{ formatTime(message.timestamp) }}</p>
         </div>
 
-        <!-- Loading indicator -->
-        <div v-if="isLoading" class="flex justify-start">
-          <div class="bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-            <div class="flex items-center space-x-2">
-              <Icon name="heroicons:arrow-path" class="w-4 h-4 text-gray-500 animate-spin" />
-              <span class="text-sm text-gray-500 dark:text-gray-400">Thinking...</span>
-            </div>
-          </div>
+        <div v-if="isLoading" class="max-w-[62ch]">
+          <p class="meta">DocuPrism</p>
+          <p class="mt-1 text-ui text-ink-muted">Thinking…</p>
         </div>
 
-        <!-- Streaming message (sanitized via formatMarkdown utility) -->
-        <div v-if="streamingMessage" class="flex justify-start">
-          <div class="max-w-[80%] bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-            <div 
-              class="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 text-gray-900 dark:text-white"
-              v-html="formatMarkdown(streamingMessage)" 
-            />
-          </div>
+        <div v-if="streamingMessage" class="max-w-[62ch]">
+          <p class="meta">DocuPrism</p>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div
+            class="reading mt-1 text-[17px] leading-[1.6]"
+            v-html="formatMarkdown(streamingMessage)"
+          />
         </div>
       </div>
 
-      <!-- Chat Input -->
-      <div class="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700">
-        <form class="flex space-x-2" @submit.prevent="handleSendMessage">
-          <input
-            v-model="inputMessage"
-            type="text"
-            placeholder="Ask a question..."
-            class="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
-            :disabled="isLoading || !hasDocument"
-          >
-          <button
-            type="submit"
-            class="btn-primary px-3 sm:px-4 py-2"
-            :disabled="!inputMessage.trim() || isLoading || !hasDocument"
-          >
-            <Icon v-if="isLoading" name="heroicons:arrow-path" class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-            <Icon v-else name="heroicons:paper-airplane" class="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-        </form>
-        <p v-if="!hasDocument" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Please enter or upload a document first to start chatting
-        </p>
-      </div>
+      <form class="flex items-center gap-2 px-6 pb-5 sm:px-8" @submit.prevent="handleSendMessage">
+        <label for="chat-input" class="sr-only">Ask a question about the document</label>
+        <input
+          id="chat-input"
+          ref="chatInput"
+          v-model="inputMessage"
+          type="text"
+          placeholder="Ask a question…"
+          class="field flex-1"
+          :disabled="isLoading || !hasDocument"
+          autocomplete="off"
+        >
+        <button
+          type="submit"
+          class="btn btn-primary"
+          :disabled="!inputMessage.trim() || isLoading || !hasDocument"
+        >
+          Ask
+        </button>
+      </form>
     </template>
   </div>
 </template>
@@ -180,41 +145,42 @@ import { detectAIBrowser, type AIBrowser } from '../utils/browser'
 interface Props {
   documentText: string
   hasDocument: boolean
-  chatHeight?: string
 }
 
 const props = defineProps<Props>()
 const toast = useToast()
 
-const { 
-  isLoading, 
-  chatHistory, 
-  createSession, 
+const {
+  isLoading,
+  chatHistory,
+  createSession,
   sendMessageStreaming,
   clearHistory,
   destroySession,
-  checkSupport 
+  checkSupport
 } = useChromePrompt()
 
 const inputMessage = ref('')
 const streamingMessage = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
+const chatInput = ref<HTMLInputElement | null>(null)
 const isPromptApiAvailable = ref(false)
 const browser = ref<AIBrowser>('chrome')
 
-// Check if Prompt API is available on mount (client-side only)
+const suggestions = [
+  'What is the main claim?',
+  'Which numbers does it report?',
+  'What does it leave out?'
+]
+
 onMounted(async () => {
   if (typeof window !== 'undefined') {
     browser.value = detectAIBrowser()
     isPromptApiAvailable.value = await checkSupport()
-    
-    // After checking support, try to create session if we have a document
+
     if (isPromptApiAvailable.value && props.documentText && props.documentText.trim()) {
       try {
-        const success = await createSession(props.documentText)
-        if (success) {
-          toast.success('Chat session created! You can now ask questions.')
-        }
+        await createSession(props.documentText)
       } catch (error) {
         console.error('Error creating chat session:', error)
         toast.error('Failed to initialize chat')
@@ -223,24 +189,18 @@ onMounted(async () => {
   }
 })
 
-// Create session when document changes (but not on initial mount)
 watch(() => props.documentText, async (newText, oldText) => {
-  // Don't try to create session if Prompt API is not available
   if (!isPromptApiAvailable.value) {
     return
   }
-  
-  // Skip if this is the initial value (handled in onMounted)
+
   if (oldText === undefined) {
     return
   }
-  
+
   if (newText && newText.trim()) {
     try {
-      const success = await createSession(newText)
-      if (success) {
-        toast.success('Chat session updated!')
-      }
+      await createSession(newText)
     } catch (error) {
       console.error('Error creating chat session:', error)
       toast.error('Failed to initialize chat')
@@ -249,6 +209,12 @@ watch(() => props.documentText, async (newText, oldText) => {
     destroySession()
   }
 })
+
+const useSuggestion = async (question: string) => {
+  inputMessage.value = question
+  await nextTick()
+  chatInput.value?.focus()
+}
 
 const handleSendMessage = async () => {
   if (!inputMessage.value.trim() || isLoading.value) return
@@ -271,7 +237,7 @@ const handleSendMessage = async () => {
 }
 
 const handleClearChat = () => {
-  if (confirm('Are you sure you want to clear the chat history?')) {
+  if (confirm('Clear this chat history?')) {
     clearHistory()
     toast.info('Chat history cleared')
   }
@@ -286,16 +252,12 @@ const scrollToBottom = async () => {
 
 const formatTime = (timestamp: number): string => {
   const date = new Date(timestamp)
-  return date.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 
-// Use the imported formatMarkdown utility from utils/markdownFormatter.ts
-// It provides secure markdown formatting with built-in sanitization
-
-// Scroll to bottom when new messages arrive
 watch(chatHistory, () => {
   scrollToBottom()
 }, { deep: true })

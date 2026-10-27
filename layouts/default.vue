@@ -1,25 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 transition-colors duration-300 flex flex-col">
+  <div class="flex min-h-screen flex-col bg-ground text-ink">
     <NuxtRouteAnnouncer />
-    
+
     <HeaderView @toggle-mobile-menu="toggleMobileMenu" />
 
-    <div class="flex-1 relative z-0">
+    <div class="relative z-0 flex-1">
       <slot />
     </div>
-    
+
     <FooterView />
-    
-    <!-- PWA Components -->
+
     <PWAInstallPrompt />
-    
-    <!-- Development Info (solo en modo dev) -->
     <DevOfflineInfo />
-    
-    <!-- Toast Notifications -->
     <ToastContainer />
-    
-    <!-- Mobile Menu (outside of header for proper z-index) -->
     <MobileMenu :is-open="isMobileMenuOpen" @close="closeMobileMenu" />
   </div>
 </template>
@@ -31,11 +24,9 @@ import FooterView from '../sections/FooterView.vue'
 import ToastContainer from '../components/ToastContainer.vue'
 import MobileMenu from '../components/MobileMenu.vue'
 
-// Lazy load components that are not immediately critical
 const PWAInstallPrompt = defineAsyncComponent(() => import('../components/PWAInstallPrompt.vue'))
 const DevOfflineInfo = defineAsyncComponent(() => import('../components/DevOfflineInfo.vue'))
 
-// Mobile menu state
 const isMobileMenuOpen = ref(false)
 
 const toggleMobileMenu = () => {

@@ -36,3 +36,10 @@ playwright/.cache/
 
 # Vitest
 .vitest/
+
+# Design review artifacts
+.taste-skill/
+
+.agents
+.claude
+skills-lock.json

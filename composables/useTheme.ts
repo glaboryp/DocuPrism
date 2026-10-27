@@ -1,66 +1,65 @@
-import { ref, onMounted, readonly } from 'vue'
+import { ref, readonly } from 'vue'
 
 export type Theme = 'light' | 'dark'
 
+// One theme state for the entire app. The header toggle, the mobile menu label and
+// the menu's own toggle must all read and write the same ref, or they disagree
+// about which mode is on.
+const isDark = ref<boolean>(true)
+let initialized = false
+
+const updateDocumentClass = () => {
+  if (typeof document === 'undefined') return
+
+  if (isDark.value) {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+}
+
+const writePreference = () => {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem('theme-preference', isDark.value ? 'dark' : 'light')
+}
+
+// Initialize from the class the inline script already set, or from storage.
+const initializeTheme = () => {
+  if (typeof window === 'undefined') return
+
+  const currentlyDark = document.documentElement.classList.contains('dark')
+  const stored = window.localStorage.getItem('theme-preference') as Theme | null
+
+  isDark.value = stored
+    ? stored === 'dark'
+    : currentlyDark || window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  if (isDark.value !== currentlyDark) {
+    updateDocumentClass()
+  }
+
+  initialized = true
+}
+
 export const useTheme = () => {
-  // Reactive state for theme preference (default to dark)
-  const isDark = ref<boolean>(true)
-  
+  if (!initialized) {
+    initializeTheme()
+  }
+
   // Toggle between light and dark
   const toggleTheme = () => {
     isDark.value = !isDark.value
     updateDocumentClass()
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme-preference', isDark.value ? 'dark' : 'light')
-    }
+    writePreference()
   }
-  
+
   // Set specific theme
   const setTheme = (theme: Theme) => {
     isDark.value = theme === 'dark'
     updateDocumentClass()
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme-preference', theme)
-    }
+    writePreference()
   }
-  
-  // Update document class
-  const updateDocumentClass = () => {
-    if (typeof document !== 'undefined') {
-      if (isDark.value) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
-  
-  // Initialize theme from localStorage
-  const initializeTheme = () => {
-    if (typeof window !== 'undefined') {
-      // Check current state from DOM (may have been set by inline script)
-      const currentlyDark = document.documentElement.classList.contains('dark')
-      
-      const stored = localStorage.getItem('theme-preference') as Theme | null
-      if (stored) {
-        isDark.value = stored === 'dark'
-      } else {
-        // Use current DOM state if no stored preference
-        isDark.value = currentlyDark || window.matchMedia('(prefers-color-scheme: dark)').matches
-      }
-      
-      // Only update DOM if there's a mismatch
-      if (isDark.value !== currentlyDark) {
-        updateDocumentClass()
-      }
-    }
-  }
-  
-  // Initialize on mount
-  onMounted(() => {
-    initializeTheme()
-  })
-  
+
   return {
     isDark: readonly(isDark),
     toggleTheme,
