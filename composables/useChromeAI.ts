@@ -314,8 +314,7 @@ const createChromeAI = () => {
     // Check cache first
     const cachedSummary = getCached(text, options)
     if (cachedSummary) {
-      console.log('✅ Using cached summary')
-      return cachedSummary
+            return cachedSummary
     }
 
     isLoading.value = true
@@ -390,8 +389,7 @@ const createChromeAI = () => {
         signal,
         monitor: (monitor) => {
           monitor.addEventListener('downloadprogress', (e) => {
-            console.log(`Download progress: ${Math.round(e.loaded * 100)}%`)
-            armCreateTimeout()
+                        armCreateTimeout()
           })
         }
       }
@@ -431,8 +429,7 @@ const createChromeAI = () => {
       
       // Cache the result for future use
       setCached(text, options, result)
-      console.log('💾 Summary cached for future use')
-      
+            
       return result
     } catch (err) {
       if (!(err instanceof AppError && err.code === ErrorCode.AI_CANCELLED)) {

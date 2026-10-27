@@ -199,7 +199,6 @@ DocuPrism/
 ├── layouts/                # Nuxt layouts
 │   └── default.vue
 ├── middleware/             # Route middleware
-│   ├── check-ai-ready.global.ts
 │   └── ignore-sw.global.ts
 ├── pages/                  # Nuxt pages
 │   ├── index.vue          # Main analysis page
