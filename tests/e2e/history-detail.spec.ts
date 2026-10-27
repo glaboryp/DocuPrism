@@ -16,6 +16,15 @@ test.describe('History detail', () => {
   test('should open the saved reading above the page chrome', async ({ page }) => {
     await page.addInitScript(seedAnalysis)
     await page.goto('/history')
+    await page.waitForSelector('main', { state: 'visible' })
+
+    // Browsers without the model auto-open the requirements sheet on arrival
+    const requirements = page.getByRole('dialog', { name: /cannot run the model/i })
+    await requirements.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+    if (await requirements.isVisible().catch(() => false)) {
+      await page.keyboard.press('Escape')
+      await expect(requirements).toBeHidden()
+    }
 
     await page.getByRole('button', { name: /billing platform/i }).click()
 
