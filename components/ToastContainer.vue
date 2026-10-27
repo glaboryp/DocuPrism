@@ -2,7 +2,7 @@
   <div
     class="pointer-events-none fixed bottom-24 left-4 z-[90] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2 sm:left-6"
     role="region"
-    aria-label="Notifications"
+    :aria-label="t('common.notifications')"
     aria-live="polite"
   >
     <TransitionGroup name="toast">
@@ -18,7 +18,7 @@
         <button
           type="button"
           class="-mr-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center opacity-70 transition-opacity hover:opacity-100"
-          aria-label="Dismiss notification"
+          :aria-label="t('common.dismissNotification')"
           @click="removeToast(toast.id)"
         >
           <Icon name="heroicons:x-mark" class="h-4 w-4" aria-hidden="true" />
@@ -30,8 +30,10 @@
 
 <script setup lang="ts">
 import { useToast } from '../composables/useToast'
+import { useI18n } from '../composables/useI18n'
 
 const { toasts, remove } = useToast()
+const { t } = useI18n()
 
 const removeToast = (id: string) => {
   remove(id)

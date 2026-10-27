@@ -2,9 +2,9 @@
   <main id="main-content" class="frame pb-16 pt-8 sm:pt-10 lg:pt-12">
     <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
       <div class="lg:col-span-8">
-        <h1 class="reveal font-read text-display">History</h1>
+        <h1 class="reveal font-read text-display">{{ t('history.title') }}</h1>
         <p class="reveal reveal-1 mt-4 max-w-[46ch] text-ui text-ink">
-          Readings saved in this browser. They stay here until you delete them.
+          {{ t('history.subtitle') }}
         </p>
       </div>
 
@@ -13,8 +13,11 @@
         class="reveal reveal-2 lg:col-span-4 lg:justify-self-end lg:text-right"
       >
         <p class="meta tabular">
-          {{ analyses.length }} of 10 readings · {{ formatBytes(storageInfo.used) }} of
-          {{ formatBytes(storageInfo.available) }}
+          {{ t('history.storageMeter', {
+            count: analyses.length,
+            used: formatBytes(storageInfo.used),
+            available: formatBytes(storageInfo.available)
+          }) }}
         </p>
         <div class="meter mt-2 w-full sm:w-56">
           <span :style="{ width: `${Math.min(storageInfo.percentage, 100)}%` }" />
@@ -22,36 +25,35 @@
       </div>
     </div>
 
-    <section class="mt-10" aria-label="Saved analyses">
+    <section class="mt-10" :aria-label="t('history.ariaSavedAnalyses')">
       <div v-if="!isStorageAvailable" class="notice">
-        <span class="font-medium">Local storage is not available.</span>
-        Readings cannot be saved or loaded in this browser right now.
+        <span class="font-medium">{{ t('history.storageUnavailableTitle') }} </span>
+        {{ t('history.storageUnavailableDesc') }}
       </div>
 
       <div v-else-if="analyses.length === 0" class="sheet p-8 sm:p-12">
-        <p class="font-read text-[24px] leading-tight">Nothing read yet.</p>
+        <p class="font-read text-[24px] leading-tight">{{ t('history.emptyTitle') }}</p>
         <p class="mt-3 max-w-[40ch] text-ui text-ink">
-          Every summary you save is kept here, in this browser. No account, no server,
-          no copy anywhere else.
+          {{ t('history.emptyDesc') }}
         </p>
 
         <dl class="mt-8 grid gap-5 sm:grid-cols-3">
           <div>
-            <dt class="text-ui font-medium">Saved</dt>
-            <dd class="meta mt-1">The first 1,000 characters of the document and the summary.</dd>
+            <dt class="text-ui font-medium">{{ t('history.features.savedTitle') }}</dt>
+            <dd class="meta mt-1">{{ t('history.features.savedDesc') }}</dd>
           </div>
           <div>
-            <dt class="text-ui font-medium">Location</dt>
-            <dd class="meta mt-1">This browser's local storage. Nothing is uploaded.</dd>
+            <dt class="text-ui font-medium">{{ t('history.features.locationTitle') }}</dt>
+            <dd class="meta mt-1">{{ t('history.features.locationDesc') }}</dd>
           </div>
           <div>
-            <dt class="text-ui font-medium">Limit</dt>
-            <dd class="meta mt-1">10 readings, about 5 MB. Delete any of them at any time.</dd>
+            <dt class="text-ui font-medium">{{ t('history.features.limitTitle') }}</dt>
+            <dd class="meta mt-1">{{ t('history.features.limitDesc') }}</dd>
           </div>
         </dl>
 
         <NuxtLink to="/" class="btn btn-primary mt-8">
-          Read a document
+          {{ t('history.readDocumentBtn') }}
         </NuxtLink>
       </div>
 
@@ -80,14 +82,14 @@
               <span class="meta mt-2 flex flex-wrap gap-x-2 tabular sm:hidden">
                 <span>{{ formatTimestamp(analysis.timestamp) }}</span>
                 <span aria-hidden="true">·</span>
-                <span>{{ analysis.options.type }}</span>
+                <span>{{ formatAnalysisType(analysis.options.type) }}</span>
               </span>
               <span class="meta mt-2 hidden gap-x-2 tabular sm:flex">
-                <span>{{ analysis.options.type }}</span>
+                <span>{{ formatAnalysisType(analysis.options.type) }}</span>
                 <span aria-hidden="true">·</span>
-                <span>{{ analysis.options.length }}</span>
+                <span>{{ formatAnalysisLength(analysis.options.length) }}</span>
                 <span aria-hidden="true">·</span>
-                <span>{{ analysis.inputText.length.toLocaleString() }} characters</span>
+                <span>{{ t('history.charactersCount', { count: formatNumber(analysis.inputText.length) }) }}</span>
               </span>
             </button>
 
@@ -95,18 +97,18 @@
               <button
                 type="button"
                 class="btn-quiet"
-                :aria-label="`Copy summary from ${formatTimestamp(analysis.timestamp)}`"
+                :aria-label="t('history.copyAria', { date: formatTimestamp(analysis.timestamp) })"
                 @click="copySummary(analysis)"
               >
-                Copy
+                {{ t('common.copy') }}
               </button>
               <button
                 type="button"
                 class="btn-danger"
-                :aria-label="`Delete analysis from ${formatTimestamp(analysis.timestamp)}`"
+                :aria-label="t('history.deleteAria', { date: formatTimestamp(analysis.timestamp) })"
                 @click="deleteAnalysisItem(analysis.id)"
               >
-                Delete
+                {{ t('common.delete') }}
               </button>
             </div>
           </li>
@@ -117,7 +119,7 @@
           class="btn-danger mt-6"
           @click="handleClearAll"
         >
-          Clear all history
+          {{ t('history.clearAll') }}
         </button>
       </template>
     </section>
@@ -144,19 +146,19 @@
           <div class="flex items-start justify-between gap-6">
             <div>
               <h2 id="history-detail-title" class="font-read text-title">
-                Saved reading
+                {{ t('history.detailTitle') }}
               </h2>
               <p class="meta mt-2">
                 {{ formatTimestamp(selectedAnalysis.timestamp) }} ·
-                {{ selectedAnalysis.options.type }} ·
-                {{ selectedAnalysis.options.length }}
+                {{ formatAnalysisType(selectedAnalysis.options.type) }} ·
+                {{ formatAnalysisLength(selectedAnalysis.options.length) }}
               </p>
             </div>
             <button
               ref="detailCloseButton"
               type="button"
               class="-mr-2 inline-flex h-11 w-11 flex-shrink-0 items-center justify-center text-ink transition-colors hover:bg-inset"
-              aria-label="Close"
+              :aria-label="t('common.close')"
               @click="closeModal"
             >
               <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
@@ -164,14 +166,14 @@
           </div>
 
           <div class="mt-8">
-            <h3 class="meta">Original</h3>
+            <h3 class="meta">{{ t('history.originalHeading') }}</h3>
             <div class="mt-2 max-h-56 overflow-y-auto bg-inset p-4 whitespace-pre-wrap text-ui text-ink-muted">
               {{ selectedAnalysis.inputText }}
             </div>
           </div>
 
           <div class="mt-8">
-            <h3 class="meta">Summary</h3>
+            <h3 class="meta">{{ t('desk.tabs.summary') }}</h3>
             <div class="mt-2 whitespace-pre-wrap font-read text-[17px] leading-[1.65]">
               {{ selectedAnalysis.summary }}
             </div>
@@ -183,14 +185,14 @@
               class="btn btn-primary"
               @click="copySummary(selectedAnalysis)"
             >
-              Copy summary
+              {{ t('common.copy') }}
             </button>
             <button
               type="button"
               class="btn-danger"
               @click="deleteSelected"
             >
-              Delete
+              {{ t('common.delete') }}
             </button>
           </div>
         </div>
@@ -203,15 +205,18 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
+import { useI18n } from '../composables/useI18n'
 import type { StoredAnalysis } from '../types/storage'
 
 definePageMeta({
   name: 'history'
 })
 
+const { t, formatNumber } = useI18n()
+
 useHead({
-  title: 'History - DocuPrism',
-  meta: [{ name: 'description', content: 'View your saved document analyses' }]
+  title: computed(() => `${t('history.title')} - DocuPrism`),
+  meta: [{ name: 'description', content: computed(() => t('history.subtitle')) }]
 })
 
 const {
@@ -237,6 +242,25 @@ const storageInfo = computed(() => {
   return getStorageInfo()
 })
 
+const formatAnalysisType = (type: string) => {
+  const map: Record<string, string> = {
+    tldr: t('desk.types.tldr'),
+    'key-points': t('desk.types.keyPoints'),
+    teaser: t('desk.types.teaser'),
+    headline: t('desk.types.headline')
+  }
+  return map[type] || type
+}
+
+const formatAnalysisLength = (length: string) => {
+  const map: Record<string, string> = {
+    short: t('desk.lengths.short'),
+    medium: t('desk.lengths.medium'),
+    long: t('desk.lengths.long')
+  }
+  return map[length] || length
+}
+
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return '0 bytes'
   const k = 1024
@@ -257,45 +281,40 @@ const closeModal = () => {
 const copySummary = async (analysis: StoredAnalysis) => {
   try {
     await navigator.clipboard.writeText(analysis.summary)
-    toast.success('Summary copied to clipboard')
+    toast.success(t('toasts.copiedToClipboard'))
   } catch (err) {
     console.error('Failed to copy:', err)
-    toast.error('Failed to copy to clipboard')
+    toast.error(t('toasts.failedToCopy'))
   }
 }
 
 const deleteAnalysisItem = (id: string) => {
-  if (confirm('Are you sure you want to delete this analysis?')) {
-    const success = deleteAnalysis(id)
-    if (success) {
-      toast.success('Analysis deleted')
-    } else {
-      toast.error('Failed to delete analysis')
-    }
+  const success = deleteAnalysis(id)
+  if (success) {
+    toast.success(t('toasts.analysisDeleted'))
+  } else {
+    toast.error(t('toasts.failedToDelete'))
   }
 }
 
 const deleteSelected = () => {
   if (!selectedAnalysis.value) return
   const id = selectedAnalysis.value.id
-  if (!confirm('Are you sure you want to delete this analysis?')) return
 
   if (deleteAnalysis(id)) {
-    toast.success('Analysis deleted')
+    toast.success(t('toasts.analysisDeleted'))
     selectedAnalysis.value = null
   } else {
-    toast.error('Failed to delete analysis')
+    toast.error(t('toasts.failedToDelete'))
   }
 }
 
 const handleClearAll = () => {
-  if (confirm('Are you sure you want to delete all analyses? This action cannot be undone.')) {
-    const success = clearAllAnalyses()
-    if (success) {
-      toast.success('All analyses cleared')
-    } else {
-      toast.error('Failed to clear analyses')
-    }
+  const success = clearAllAnalyses()
+  if (success) {
+    toast.success(t('toasts.allHistoryCleared'))
+  } else {
+    toast.error(t('toasts.failedToClearHistory'))
   }
 }
 

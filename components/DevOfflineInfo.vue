@@ -5,12 +5,12 @@
   >
     <div class="flex items-start gap-3">
       <p class="flex-1">
-        Development mode, offline. Console network errors are expected.
+        {{ t('dev.offlineNotice') }}
       </p>
       <button
         type="button"
         class="-mr-1 inline-flex h-5 w-5 items-center justify-center opacity-70 transition-opacity hover:opacity-100"
-        aria-label="Dismiss development notice"
+        :aria-label="t('dev.dismissAria')"
         @click="dismissDevInfo"
       >
         <Icon name="heroicons:x-mark" class="h-3.5 w-3.5" aria-hidden="true" />
@@ -21,6 +21,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const isOnline = ref(true)
 const showDevInfo = ref(false)

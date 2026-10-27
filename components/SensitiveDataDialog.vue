@@ -20,12 +20,12 @@
       >
         <div class="flex items-start justify-between gap-6">
           <h2 id="sensitive-dialog-title" class="font-read text-title">
-            Sensitive data found.
+            {{ t('sensitive.title') }}
           </h2>
           <button
             type="button"
             class="-mr-2 inline-flex h-11 w-11 flex-shrink-0 items-center justify-center text-ink transition-colors hover:bg-inset"
-            aria-label="Close"
+            :aria-label="t('common.close')"
             @click="cancel"
           >
             <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
@@ -33,14 +33,13 @@
         </div>
 
         <p id="sensitive-dialog-description" class="mt-4 text-ui text-ink">
-          This document contains things you may not want written to the history in this browser.
-          The summary stays on screen either way.
+          {{ t('sensitive.desc') }}
         </p>
 
-        <ul class="mt-8 space-y-6" aria-label="Detected sensitive data">
+        <ul class="mt-8 space-y-6" :aria-label="t('sensitive.detectedAria')">
           <li v-for="group in groups" :key="group.kind">
             <p class="text-ui font-medium">
-              {{ SENSITIVE_KIND_LABELS[group.kind] }}
+              {{ getKindLabel(group.kind) }}
             </p>
             <div class="mt-2 flex flex-wrap gap-2">
               <code
@@ -53,15 +52,14 @@
         </ul>
 
         <div class="mt-8 bg-inset p-4">
-          <p class="text-ui font-medium">What gets saved</p>
+          <p class="text-ui font-medium">{{ t('sensitive.whatGetsSavedTitle') }}</p>
           <p class="mt-2 text-meta">
-            The full document text and this summary, in this browser's local storage. No server
-            receives either. You can delete the entry from History at any time.
+            {{ t('sensitive.whatGetsSavedDesc') }}
           </p>
         </div>
 
         <p class="meta mt-4">
-          History stays on this device until you delete it. The summary stays on screen either way.
+          {{ t('sensitive.persistentNote') }}
         </p>
 
         <div class="mt-auto flex flex-col-reverse gap-2 pt-10 sm:flex-row sm:items-center sm:justify-end">
@@ -70,7 +68,7 @@
             class="btn-text justify-center"
             @click="confirm"
           >
-            Save anyway
+            {{ t('sensitive.saveAnyway') }}
           </button>
           <button
             ref="cancelButton"
@@ -78,7 +76,7 @@
             class="btn btn-primary w-full sm:w-auto"
             @click="cancel"
           >
-            Keep on screen
+            {{ t('sensitive.keepOnScreen') }}
           </button>
         </div>
       </div>
@@ -91,8 +89,10 @@ import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import {
   SENSITIVE_KIND_LABELS,
   groupSensitiveFindings,
-  type SensitiveFinding
+  type SensitiveFinding,
+  type SensitiveKind
 } from '../utils/semanticChecks'
+import { useI18n } from '../composables/useI18n'
 
 interface Props {
   isOpen: boolean
@@ -105,11 +105,24 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useI18n()
 
 const cancelButton = ref<HTMLButtonElement | null>(null)
 const previouslyFocused = ref<HTMLElement | null>(null)
 
 const groups = computed(() => groupSensitiveFindings(props.findings))
+
+const getKindLabel = (kind: SensitiveKind): string => {
+  const map: Record<SensitiveKind, string> = {
+    email: t('sensitive.kinds.email'),
+    'credit-card': t('sensitive.kinds.creditCard'),
+    'api-key': t('sensitive.kinds.apiKey'),
+    'private-key': t('sensitive.kinds.privateKey'),
+    password: t('sensitive.kinds.credentials'),
+    'personal-data': t('sensitive.kinds.credentials')
+  }
+  return map[kind] || SENSITIVE_KIND_LABELS[kind] || kind
+}
 
 const cancel = () => {
   emit('cancel')

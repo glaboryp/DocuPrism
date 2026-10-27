@@ -2,8 +2,8 @@
   <button
     type="button"
     class="inline-flex h-11 w-11 items-center justify-center text-ink transition-colors hover:bg-inset"
-    :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    :title="isDark ? t('theme.switchToLight') : t('theme.switchToDark')"
+    :aria-label="isDark ? t('theme.switchToLight') : t('theme.switchToDark')"
     :aria-pressed="isDark"
     @click="toggleTheme"
   >
@@ -17,6 +17,8 @@
 
 <script setup lang="ts">
 import { useTheme } from '../composables/useTheme'
+import { useI18n } from '../composables/useI18n'
 
 const { isDark, toggleTheme } = useTheme()
+const { t } = useI18n()
 </script>

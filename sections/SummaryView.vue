@@ -1,23 +1,23 @@
 <template>
-  <main id="main-content" aria-label="Document analysis">
+  <main id="main-content" :aria-label="t('desk.ariaMain')">
     <section class="frame pb-8 pt-8 sm:pb-10 sm:pt-10 lg:pt-12">
       <div class="grid gap-6 lg:grid-cols-12 lg:items-end">
         <h1 class="reveal font-read text-display lg:col-span-8">
-          What does this document say?
+          {{ t('desk.title') }}
         </h1>
         <p class="reveal reveal-1 max-w-[38ch] text-ui text-ink lg:col-span-4 lg:justify-self-end lg:pb-1">
-          Paste a document, or open one. The summary and the chat run in Chrome, on this device — nothing is uploaded.
+          {{ t('desk.subtitle') }}
         </p>
       </div>
     </section>
 
-    <section class="frame" aria-label="Document desk">
+    <section class="frame" :aria-label="t('desk.ariaDesk')">
       <div class="grid gap-10 lg:grid-cols-12 lg:gap-8">
         <!-- Document page -->
         <div class="reveal reveal-2 lg:col-span-7">
           <div class="flex items-baseline justify-between gap-4 pb-3">
-            <h2 id="document-heading" class="font-read text-title">Document</h2>
-            <div class="flex items-center gap-5" role="tablist" aria-label="Document source">
+            <h2 id="document-heading" class="font-read text-title">{{ t('desk.documentHeading') }}</h2>
+            <div class="flex items-center gap-5" role="tablist" :aria-label="t('desk.ariaSourceTabs')">
               <button
                 id="text-input-tab"
                 role="tab"
@@ -28,7 +28,7 @@
                 :disabled="isCheckingSupport"
                 @click="inputMode = 'text'"
               >
-                Paste
+                {{ t('desk.tabPaste') }}
               </button>
               <button
                 id="file-upload-tab"
@@ -40,7 +40,7 @@
                 :disabled="isCheckingSupport"
                 @click="inputMode = 'file'"
               >
-                Open file
+                {{ t('desk.tabOpenFile') }}
               </button>
             </div>
           </div>
@@ -52,13 +52,13 @@
               role="tabpanel"
               aria-labelledby="text-input-tab"
             >
-              <label for="document-textarea" class="sr-only">Document text</label>
+              <label for="document-textarea" class="sr-only">{{ t('desk.documentTextLabel') }}</label>
               <textarea
                 id="document-textarea"
                 v-model="inputText"
                 class="doc-input"
                 :disabled="isLoading || isCheckingSupport"
-                placeholder="Paste the document here. It stays on this device."
+                :placeholder="t('desk.pastePlaceholder')"
                 spellcheck="false"
               />
             </div>
@@ -72,7 +72,7 @@
               <Suspense>
                 <FileUploader @file-loaded="handleFileLoaded" />
                 <template #fallback>
-                  <p class="p-8 text-ui text-ink-muted">Opening the file reader…</p>
+                  <p class="p-8 text-ui text-ink-muted">{{ t('desk.readingFileReader') }}</p>
                 </template>
               </Suspense>
             </div>
@@ -80,11 +80,11 @@
 
           <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
             <p class="meta tabular" aria-live="polite">
-              <span>{{ wordCount.toLocaleString() }} words</span>
+              <span>{{ formatNumber(wordCount) }} {{ t('common.words') }}</span>
               <span aria-hidden="true"> · </span>
-              <span>{{ readMinutes }} min read</span>
+              <span>{{ readMinutes }} {{ t('common.minRead') }}</span>
               <span aria-hidden="true"> · </span>
-              <span>{{ inputText.length.toLocaleString() }} characters</span>
+              <span>{{ formatNumber(inputText.length) }} {{ t('common.characters') }}</span>
             </p>
             <button
               v-if="inputText.length > 0"
@@ -93,49 +93,49 @@
               :disabled="isLoading"
               @click="handleClear"
             >
-              Clear
+              {{ t('common.clear') }}
             </button>
           </div>
 
           <div v-if="documentQuality" class="notice mt-4" role="alert">
-            <span class="font-medium">This document may not summarize well.</span>
-            {{ describeQualityIssues(documentQuality.issues) }}
+            <span class="font-medium">{{ t('desk.qualityWarningTitle') }} </span>
+            {{ describeQualityIssues(documentQuality.issues, t) }}
           </div>
 
           <fieldset class="mt-6">
-            <legend class="sr-only">Summary options</legend>
+            <legend class="sr-only">{{ t('desk.summaryOptionsLegend') }}</legend>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
-                <label for="summary-type" class="field-label">Type</label>
+                <label for="summary-type" class="field-label">{{ t('desk.typeLabel') }}</label>
                 <select
                   id="summary-type"
                   v-model="summaryOptions.type"
                   class="select-field"
                   :disabled="isLoading || isCheckingSupport"
                 >
-                  <option value="tldr">TL;DR</option>
-                  <option value="key-points">Key points</option>
-                  <option value="teaser">Teaser</option>
-                  <option value="headline">Headline</option>
+                  <option value="tldr">{{ t('desk.types.tldr') }}</option>
+                  <option value="key-points">{{ t('desk.types.keyPoints') }}</option>
+                  <option value="teaser">{{ t('desk.types.teaser') }}</option>
+                  <option value="headline">{{ t('desk.types.headline') }}</option>
                 </select>
               </div>
 
               <div>
-                <label for="summary-length" class="field-label">Length</label>
+                <label for="summary-length" class="field-label">{{ t('desk.lengthLabel') }}</label>
                 <select
                   id="summary-length"
                   v-model="summaryOptions.length"
                   class="select-field"
                   :disabled="isLoading || isCheckingSupport"
                 >
-                  <option value="short">Short</option>
-                  <option value="medium">Medium</option>
-                  <option value="long">Long</option>
+                  <option value="short">{{ t('desk.lengths.short') }}</option>
+                  <option value="medium">{{ t('desk.lengths.medium') }}</option>
+                  <option value="long">{{ t('desk.lengths.long') }}</option>
                 </select>
               </div>
 
               <div class="col-span-2">
-                <span id="format-label" class="field-label">Format</span>
+                <span id="format-label" class="field-label">{{ t('desk.formatLabel') }}</span>
                 <div class="flex h-10 items-center gap-5" role="radiogroup" aria-labelledby="format-label">
                   <label class="flex h-10 cursor-pointer items-center gap-2 text-ui">
                     <input
@@ -145,7 +145,7 @@
                       name="summary-format"
                       :disabled="isLoading || isCheckingSupport"
                     >
-                    Plain text
+                    {{ t('desk.formatPlainText') }}
                   </label>
                   <label class="flex h-10 cursor-pointer items-center gap-2 text-ui">
                     <input
@@ -155,7 +155,7 @@
                       name="summary-format"
                       :disabled="isLoading || isCheckingSupport"
                     >
-                    Markdown
+                    {{ t('desk.formatMarkdown') }}
                   </label>
                 </div>
               </div>
@@ -168,10 +168,10 @@
               class="btn btn-primary w-full sm:w-auto"
               :disabled="!canSummarize"
               :aria-busy="isLoading"
-              :aria-label="isLoading ? 'Analyzing document' : 'Summarize document'"
+              :aria-label="isLoading ? t('desk.actionAriaBusy') : t('desk.actionAriaIdle')"
               @click="handleSummarize"
             >
-              {{ isLoading ? 'Reading…' : 'Summarize' }}
+              {{ isLoading ? t('desk.actionReading') : t('desk.actionSummarize') }}
             </button>
           </div>
         </div>
@@ -183,8 +183,8 @@
           aria-labelledby="reading-heading"
         >
           <div class="flex items-baseline justify-between gap-4 pb-3">
-            <h2 id="reading-heading" class="font-read text-title">Reading</h2>
-            <div class="flex items-center gap-5" role="tablist" aria-label="Reading view">
+            <h2 id="reading-heading" class="font-read text-title">{{ t('desk.readingHeading') }}</h2>
+            <div class="flex items-center gap-5" role="tablist" :aria-label="t('desk.ariaReadingTabs')">
               <button
                 id="summary-tab"
                 role="tab"
@@ -194,7 +194,7 @@
                 aria-controls="summary-panel"
                 @click="outputMode = 'summary'"
               >
-                Summary
+                {{ t('desk.tabs.summary') }}
               </button>
               <button
                 id="chat-tab"
@@ -205,7 +205,7 @@
                 aria-controls="chat-panel"
                 @click="outputMode = 'chat'; scrollToReading()"
               >
-                Chat
+                {{ t('desk.tabs.chat') }}
               </button>
             </div>
           </div>
@@ -220,7 +220,7 @@
               aria-labelledby="summary-tab"
             >
               <div v-if="error && !isLoading" class="p-6 sm:p-8" role="alert">
-                <p class="font-read text-[24px] leading-tight">The reading stopped.</p>
+                <p class="font-read text-[24px] leading-tight">{{ t('desk.readingStoppedTitle') }}</p>
                 <p class="mt-3 text-ui text-ink-muted">{{ error }}</p>
                 <button
                   type="button"
@@ -228,27 +228,27 @@
                   :disabled="!canSummarize"
                   @click="handleSummarize"
                 >
-                  Try again
+                  {{ t('common.tryAgain') }}
                 </button>
               </div>
 
               <div v-else-if="isLoading" class="p-6 sm:p-8">
-                <p class="font-read text-[24px] leading-tight">Writing on this device…</p>
+                <p class="font-read text-[24px] leading-tight">{{ t('desk.writingTitle') }}</p>
                 <p class="mt-3 text-ui text-ink-muted">
-                  Long documents can take several minutes. Keep this tab open; you can cancel at any time.
+                  {{ t('desk.writingDesc') }}
                 </p>
                 <p class="meta tabular mt-6">{{ elapsedLabel }}</p>
-                <div class="progress mt-3" role="progressbar" aria-label="Summarizing">
+                <div class="progress mt-3" role="progressbar" :aria-label="t('desk.ariaSummarizing')">
                   <span />
                 </div>
                 <button type="button" class="btn-text mt-6" @click="cancelSummarize">
-                  Cancel
+                  {{ t('common.cancel') }}
                 </button>
               </div>
 
               <div v-else-if="summary" class="flex flex-1 flex-col p-6 sm:p-8">
                 <p class="meta tabular">
-                  {{ typeLabel }} · {{ lengthLabel }} · {{ summary.length.toLocaleString() }} characters
+                  {{ typeLabel }} · {{ lengthLabel }} · {{ formatNumber(summary.length) }} {{ t('common.characters') }}
                 </p>
                 <div class="mt-5 flex-1">
                   <!-- eslint-disable-next-line vue/no-v-html -->
@@ -256,20 +256,20 @@
                     v-if="summaryOptions.format === 'markdown'"
                     class="reading is-fresh"
                     role="article"
-                    aria-label="Generated summary"
+                    :aria-label="t('desk.ariaGeneratedSummary')"
                     v-html="formattedSummary"
                   />
                   <pre
                     v-else
                     class="reading is-fresh whitespace-pre-wrap font-read"
                     role="article"
-                    aria-label="Generated summary"
+                    :aria-label="t('desk.ariaGeneratedSummary')"
                   >{{ summary }}</pre>
                 </div>
 
                 <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
                   <button type="button" class="btn-text" @click="handleCopy">
-                    Copy
+                    {{ t('common.copy') }}
                   </button>
                   <button
                     type="button"
@@ -277,51 +277,51 @@
                     :aria-pressed="showOriginal"
                     @click="showOriginal = !showOriginal"
                   >
-                    {{ showOriginal ? 'Hide original' : 'Show original' }}
+                    {{ showOriginal ? t('desk.hideOriginal') : t('desk.showOriginal') }}
                   </button>
                 </div>
 
                 <div
                   v-if="showOriginal"
                   class="mt-6 bg-inset p-4"
-                  aria-label="Original document"
+                  :aria-label="t('desk.ariaOriginalDocument')"
                 >
-                  <p class="meta">Original</p>
+                  <p class="meta">{{ t('desk.originalLabel') }}</p>
                   <div class="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap text-ui text-ink-muted">{{ inputText }}</div>
                 </div>
               </div>
 
               <div v-else class="flex flex-1 flex-col p-6 sm:p-8">
                 <p class="font-read text-[24px] leading-tight">
-                  {{ hasDocument ? 'Ready when you are.' : 'No reading yet.' }}
+                  {{ hasDocument ? t('desk.readyTitle') : t('desk.noReadingTitle') }}
                 </p>
                 <p class="mt-3 max-w-[38ch] text-ui text-ink">
                   {{ hasDocument
-                    ? 'Choose a type and press Summarize. The reading appears here and never leaves this device.'
-                    : 'Paste a document or open a file. The summary is written here by Chrome on this device.' }}
+                    ? t('desk.readyDesc')
+                    : t('desk.noReadingDesc') }}
                 </p>
 
                 <dl class="mt-8 space-y-4">
                   <div>
-                    <dt class="text-ui font-medium">TL;DR</dt>
-                    <dd class="meta">One paragraph that answers what the document says.</dd>
+                    <dt class="text-ui font-medium">{{ t('desk.descriptions.tldrTitle') }}</dt>
+                    <dd class="meta">{{ t('desk.descriptions.tldrDesc') }}</dd>
                   </div>
                   <div>
-                    <dt class="text-ui font-medium">Key points</dt>
-                    <dd class="meta">The claims worth carrying away, in order.</dd>
+                    <dt class="text-ui font-medium">{{ t('desk.descriptions.keyPointsTitle') }}</dt>
+                    <dd class="meta">{{ t('desk.descriptions.keyPointsDesc') }}</dd>
                   </div>
                   <div>
-                    <dt class="text-ui font-medium">Teaser or headline</dt>
-                    <dd class="meta">A short opening line for someone who has not read it.</dd>
+                    <dt class="text-ui font-medium">{{ t('desk.descriptions.teaserTitle') }}</dt>
+                    <dd class="meta">{{ t('desk.descriptions.teaserDesc') }}</dd>
                   </div>
                 </dl>
 
                 <div class="mt-auto space-y-2 pt-8">
                   <p v-if="cacheStats.size > 0" class="meta tabular">
-                    {{ cacheStats.size }} of {{ cacheStats.maxSize }} readings cached on this device
+                    {{ t('desk.cachedReadings', { size: cacheStats.size, max: cacheStats.maxSize }) }}
                   </p>
                   <p class="meta">
-                    Nothing is uploaded. No account. Works offline once the model is on this device.
+                    {{ t('desk.offlinePrivacyNote') }}
                   </p>
                 </div>
               </div>
@@ -340,7 +340,7 @@
                   :has-document="hasDocument"
                 />
                 <template #fallback>
-                  <p class="p-8 text-ui text-ink-muted">Opening the chat…</p>
+                  <p class="p-8 text-ui text-ink-muted">{{ t('desk.openingChat') }}</p>
                 </template>
               </Suspense>
             </div>
@@ -365,6 +365,7 @@ import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import { useSemanticGates } from '../composables/useSemanticGates'
+import { useI18n } from '../composables/useI18n'
 import { formatMarkdown } from '../utils/markdownFormatter'
 import { describeQualityIssues, type DocumentQuality, type SensitiveFinding } from '../utils/semanticChecks'
 import { AppError, ErrorCode } from '../utils/errorHandler'
@@ -384,6 +385,7 @@ const { isSupported, isLoading, error, isCheckingSupport, summarizeText, cancelS
 const { isStorageAvailable, saveAnalysis } = useOfflineStorage()
 const { assessDocumentQuality, scanSensitiveData } = useSemanticGates()
 const toast = useToast()
+const { t, formatNumber } = useI18n()
 
 const inputText = ref<string>('')
 const summary = ref<string>('')
@@ -413,15 +415,19 @@ const readMinutes = computed(() => (wordCount.value ? Math.max(1, Math.ceil(word
 const cacheStats = computed(() => getCacheStats())
 const typeLabel = computed(() => {
   const labels: Record<string, string> = {
-    tldr: 'TL;DR',
-    'key-points': 'Key points',
-    teaser: 'Teaser',
-    headline: 'Headline'
+    tldr: t('desk.types.tldr'),
+    'key-points': t('desk.types.keyPoints'),
+    teaser: t('desk.types.teaser'),
+    headline: t('desk.types.headline')
   }
   return labels[summaryOptions.value.type] ?? 'Summary'
 })
 const lengthLabel = computed(() => {
-  const labels: Record<string, string> = { short: 'Short', medium: 'Medium', long: 'Long' }
+  const labels: Record<string, string> = {
+    short: t('desk.lengths.short'),
+    medium: t('desk.lengths.medium'),
+    long: t('desk.lengths.long')
+  }
   return labels[summaryOptions.value.length] ?? summaryOptions.value.length
 })
 
@@ -451,7 +457,7 @@ onUnmounted(stopElapsedTimer)
 const elapsedLabel = computed(() => {
   const minutes = Math.floor(elapsedSeconds.value / 60)
   const seconds = String(elapsedSeconds.value % 60).padStart(2, '0')
-  return `Elapsed ${minutes}:${seconds}`
+  return t('desk.elapsed', { time: `${minutes}:${seconds}` })
 })
 
 const canSummarize = computed(() => {
@@ -470,10 +476,10 @@ const saveToHistory = (text: string, result: string) => {
 
   try {
     saveAnalysis(text, result, summaryOptions.value)
-    toast.info('Analysis saved to history')
+    toast.info(t('toasts.analysisSaved'))
   } catch (storageError) {
     console.warn('Failed to save analysis offline:', storageError)
-    toast.warning('Could not save to history')
+    toast.warning(t('toasts.couldNotSave'))
   }
 }
 
@@ -491,7 +497,7 @@ const cancelSave = () => {
   isSensitiveDialogOpen.value = false
   sensitiveFindings.value = []
   pendingAnalysis.value = null
-  toast.info('Summary kept on screen, not saved to history')
+  toast.info(t('toasts.sensitiveKeptOnScreen'))
 }
 
 const scrollToReading = () => {
@@ -522,7 +528,7 @@ const handleSummarize = async () => {
     const usedCache = cacheStatsAfter.size === hadCacheBefore
 
     if (usedCache) {
-      toast.success('Summary retrieved from cache')
+      toast.success(t('toasts.summaryFromCache'))
     }
 
     if (!result || !isStorageAvailable.value) return
@@ -538,11 +544,11 @@ const handleSummarize = async () => {
     saveToHistory(text, result)
   } catch (err) {
     if (err instanceof AppError && err.code === ErrorCode.AI_CANCELLED) {
-      toast.info('Summarization cancelled')
+      toast.info(t('toasts.cancelled'))
       return
     }
     console.error('Summarization failed:', err)
-    toast.error(err instanceof Error ? err.message : 'Failed to generate summary')
+    toast.error(err instanceof Error ? err.message : t('toasts.failedSummary'))
   }
 }
 
@@ -554,16 +560,16 @@ const handleClear = () => {
   pendingAnalysis.value = null
   sensitiveFindings.value = []
   isSensitiveDialogOpen.value = false
-  toast.info('Content cleared')
+  toast.info(t('toasts.contentCleared'))
 }
 
 const handleCopy = async () => {
   try {
     await navigator.clipboard.writeText(summary.value)
-    toast.success('Summary copied to clipboard')
+    toast.success(t('toasts.copiedToClipboard'))
   } catch (err) {
     console.error('Failed to copy to clipboard:', err)
-    toast.error('Failed to copy to clipboard')
+    toast.error(t('toasts.failedToCopy'))
   }
 }
 
@@ -576,10 +582,20 @@ const handleFileLoaded = async (
   inputMode.value = 'text'
 
   if (metadata) {
-    const pageInfo = metadata.pageCount ? ` (${metadata.pageCount} pages)` : ''
-    toast.info(`File "${filename}" loaded${pageInfo}. ${metadata.wordCount} words ready.`)
+    if (metadata.pageCount) {
+      toast.info(t('toasts.fileLoadedWithPages', {
+        filename,
+        pageCount: metadata.pageCount,
+        wordCount: metadata.wordCount
+      }))
+    } else {
+      toast.info(t('toasts.fileLoadedWords', {
+        filename,
+        wordCount: metadata.wordCount
+      }))
+    }
   } else {
-    toast.info(`File "${filename}" loaded. You can now edit or summarize it.`)
+    toast.info(t('toasts.fileLoadedFallback', { filename }))
   }
 
   const quality = await assessDocumentQuality(content)

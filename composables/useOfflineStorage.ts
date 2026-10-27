@@ -156,24 +156,29 @@ export const useOfflineStorage = () => {
 
   // Format timestamp for display
   const formatTimestamp = (timestamp: number): string => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffHours = diffMs / (1000 * 60 * 60)
-    const diffDays = diffMs / (1000 * 60 * 60 * 24)
+    try {
+      const { formatRelativeTime } = useI18n()
+      return formatRelativeTime(timestamp)
+    } catch {
+      const date = new Date(timestamp)
+      const now = new Date()
+      const diffMs = now.getTime() - date.getTime()
+      const diffHours = diffMs / (1000 * 60 * 60)
+      const diffDays = diffMs / (1000 * 60 * 60 * 24)
 
-    if (diffHours < 1) {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60))
-      if (diffMinutes <= 0) return 'just now'
-      return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`
-    } else if (diffHours < 24) {
-      const hours = Math.floor(diffHours)
-      return hours === 1 ? '1 hour ago' : `${hours} hours ago`
-    } else if (diffDays < 7) {
-      const days = Math.floor(diffDays)
-      return days === 1 ? '1 day ago' : `${days} days ago`
-    } else {
-      return date.toLocaleDateString()
+      if (diffHours < 1) {
+        const diffMinutes = Math.floor(diffMs / (1000 * 60))
+        if (diffMinutes <= 0) return 'just now'
+        return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`
+      } else if (diffHours < 24) {
+        const hours = Math.floor(diffHours)
+        return hours === 1 ? '1 hour ago' : `${hours} hours ago`
+      } else if (diffDays < 7) {
+        const days = Math.floor(diffDays)
+        return days === 1 ? '1 day ago' : `${days} days ago`
+      } else {
+        return date.toLocaleDateString()
+      }
     }
   }
 

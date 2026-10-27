@@ -4,7 +4,7 @@
       <NuxtLink
         to="/"
         class="reveal flex items-center gap-2.5 text-ink"
-        aria-label="DocuPrism home"
+        :aria-label="t('header.homeAria')"
       >
         <BrandMark class="h-6 w-6" />
         <span class="text-[17px] font-semibold tracking-[-0.01em]">DocuPrism</span>
@@ -35,16 +35,16 @@
             class="text-meta text-ink underline decoration-1 underline-offset-2"
             @click="showModal = true"
           >
-            Requirements
+            {{ t('header.requirements') }}
           </button>
         </div>
 
-        <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+        <nav class="hidden items-center gap-1 lg:flex" :aria-label="t('header.primaryNav')">
           <NuxtLink
             to="/history"
             class="inline-flex h-11 items-center px-2 text-ui text-ink transition-colors hover:text-ink-muted"
           >
-            History
+            {{ t('common.history') }}
           </NuxtLink>
           <a
             href="https://github.com/glaboryp/DocuPrism"
@@ -52,15 +52,16 @@
             rel="noopener noreferrer"
             class="inline-flex h-11 items-center px-2 text-ui text-ink transition-colors hover:text-ink-muted"
           >
-            GitHub
+            {{ t('common.github') }}
           </a>
+          <LanguageToggle />
           <ThemeToggle />
         </nav>
 
         <button
           type="button"
           class="inline-flex h-11 w-11 items-center justify-center text-ink transition-colors hover:bg-inset lg:hidden"
-          aria-label="Open menu"
+          :aria-label="t('header.openMenu')"
           @click="$emit('toggle-mobile-menu')"
         >
           <Icon name="heroicons:bars-3" class="h-5 w-5" aria-hidden="true" />
@@ -78,8 +79,10 @@
 <script setup lang="ts">
 import { computed, ref, watch, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
+import { useI18n } from '../composables/useI18n'
 import { detectAIBrowser } from '../utils/browser'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import LanguageToggle from '../components/LanguageToggle.vue'
 import BrandMark from '../components/BrandMark.vue'
 
 const AIRequirementsModal = defineAsyncComponent(() => import('../components/AIRequirementsModal.vue'))
@@ -87,6 +90,7 @@ const AIRequirementsModal = defineAsyncComponent(() => import('../components/AIR
 defineEmits(['toggle-mobile-menu'])
 
 const { isSupported, isCheckingSupport } = useChromeAI()
+const { t } = useI18n()
 
 const showModal = ref(false)
 
@@ -103,7 +107,7 @@ watch(isCheckingSupport, (checking) => {
 })
 
 const statusLabel = computed(() => {
-  if (isCheckingSupport.value) return 'Checking model…'
-  return isSupported.value ? 'On-device · Ready' : 'Model unavailable'
+  if (isCheckingSupport.value) return t('header.checkingModel')
+  return isSupported.value ? t('header.modelReady') : t('header.modelUnavailable')
 })
 </script>

@@ -8,16 +8,16 @@
   >
     <div>
       <p class="font-read text-[24px] leading-tight">
-        {{ isDragging ? 'Drop the file here.' : 'Open a document from this device.' }}
+        {{ isDragging ? t('fileUploader.dragActive') : t('fileUploader.dragIdle') }}
       </p>
       <p class="mt-3 max-w-[46ch] text-ui text-ink">
-        TXT, MD, PDF or DOCX, up to {{ maxSizeMB }} MB. The file is read here; it is never uploaded.
+        {{ t('fileUploader.subtitle', { maxSize: maxSizeMB }) }}
       </p>
     </div>
 
     <div v-if="isLoading" class="mt-8" role="status" aria-live="polite">
       <p class="meta">
-        Reading{{ selectedFile ? ` “${selectedFile.name}”` : ' the file' }}…
+        {{ selectedFile ? t('fileUploader.readingNamedFile', { name: selectedFile.name }) : t('fileUploader.readingFile') }}
       </p>
       <div class="progress mt-3">
         <span />
@@ -32,16 +32,16 @@
       <button
         type="button"
         class="btn-quiet"
-        aria-label="Remove file"
+        :aria-label="t('fileUploader.removeAria')"
         @click="clearFile"
       >
-        Remove
+        {{ t('common.remove') }}
       </button>
     </div>
 
     <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
       <label class="btn btn-primary cursor-pointer">
-        Open file
+        {{ t('common.openFile') }}
         <input
           ref="fileInput"
           type="file"
@@ -50,11 +50,11 @@
           @change="handleFileSelect"
         >
       </label>
-      <span class="meta">or drop it onto this page</span>
+      <span class="meta">{{ t('fileUploader.orDrop') }}</span>
     </div>
 
     <p class="meta mt-6">
-      PDF and Word files are extracted locally before summarizing.
+      {{ t('fileUploader.localNote') }}
     </p>
   </div>
 </template>
@@ -62,6 +62,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useToast } from '../composables/useToast'
+import { useI18n } from '../composables/useI18n'
 import { parseDocument, getSupportedExtensions, getSupportedMimeTypes } from '../utils/documentParser'
 import { validateFileSize, validateFileType, formatFileSize } from '../utils/validators'
 
@@ -80,6 +81,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 const toast = useToast()
+const { t } = useI18n()
 
 const isDragging = ref(false)
 const isLoading = ref(false)
@@ -139,7 +141,7 @@ const processFile = async (file: File) => {
     }
 
     if (!result.text.trim()) {
-      throw new Error('File appears to be empty or could not be read')
+      throw new Error(t('toasts.emptyFile'))
     }
 
     emit('file-loaded', result.text, file.name, {
@@ -148,12 +150,20 @@ const processFile = async (file: File) => {
       pageCount: result.pageCount
     })
 
-    const fileInfo = result.pageCount
-      ? `${result.pageCount} pages, ${result.wordCount} words`
-      : `${result.wordCount} words`
-    toast.success(`File "${file.name}" loaded (${fileInfo})`)
+    if (result.pageCount) {
+      toast.success(t('toasts.fileLoadedWithPages', {
+        filename: file.name,
+        pageCount: result.pageCount,
+        wordCount: result.wordCount
+      }))
+    } else {
+      toast.success(t('toasts.fileLoadedWords', {
+        filename: file.name,
+        wordCount: result.wordCount
+      }))
+    }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Failed to read file'
+    const errorMsg = error instanceof Error ? error.message : t('toasts.readFailed', { filename: file.name, error: '' })
     toast.error(errorMsg)
     emit('error', errorMsg)
     selectedFile.value = null

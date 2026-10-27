@@ -1,24 +1,34 @@
 <script setup lang="ts">
 import '../assets/css/main.css'
+import { computed, onMounted } from 'vue'
 import { useChromeAI } from './composables/useChromeAI'
+import { useI18n } from './composables/useI18n'
 
 const { initialize } = useChromeAI()
+const { locale, t } = useI18n()
 
 onMounted(async () => {
   await initialize()
 })
 
 useHead({
-  title: 'DocuPrism - On-Device Document Analysis',
-  htmlAttrs: { lang: 'en' },
+  title: computed(() => `DocuPrism - ${t('common.appName')}`),
+  htmlAttrs: { lang: computed(() => locale.value) },
   meta: [
-    { name: 'description', content: 'Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI' }
+    { name: 'description', content: computed(() => t('footer.tagline')) }
   ],
   script: [
     {
       innerHTML: `
         (function() {
           document.documentElement.classList.add('no-transitions');
+
+          try {
+            var storedLocale = localStorage.getItem('docuprism-locale');
+            var isSpanish = (navigator.languages && navigator.languages[0] ? navigator.languages[0] : navigator.language || '').toLowerCase().startsWith('es');
+            var detected = storedLocale || (isSpanish ? 'es' : 'en');
+            document.documentElement.setAttribute('lang', detected);
+          } catch (e) {}
 
           try {
             const stored = localStorage.getItem('theme-preference');
@@ -49,7 +59,7 @@ useHead({
 
 <template>
   <div>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#main-content" class="skip-link">{{ t('common.skipToMain') }}</a>
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
