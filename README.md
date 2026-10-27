@@ -9,9 +9,9 @@ A privacy-first, offline-capable PWA for on-device document analysis using the C
 [![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge)](https://docuprism.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![Chrome AI](https://img.shields.io/badge/Chrome-Built--in%20AI-orange?style=for-the-badge&logo=google-chrome)](https://developer.chrome.com/docs/ai/built-in)
-[![Tests](https://img.shields.io/badge/tests-57%2F57%20passing-brightgreen?style=for-the-badge)](tests/README.md)
+[![Tests](https://img.shields.io/badge/tests-64%2F64%20passing-brightgreen?style=for-the-badge)](tests/README.md)
 
-> **Note:** This application requires desktop Chrome 148+ (or an equivalent Chromium-based browser). The Summarizer and Language Detector APIs are stable since Chrome 138, and the Prompt API used by the chat is stable since Chrome 148. No flags are required. See [Setup Instructions](#-getting-started-running-locally) below.
+> **Note:** This application requires desktop Chrome 148+ or Microsoft Edge. The Summarizer and Language Detector APIs are stable since Chrome 138, and the Prompt API used by the chat is stable since Chrome 148. No flags are required. Other Chromium browsers (Brave, Opera, Vivaldi) keep the API names but ship no model, so DocuPrism reports them as unsupported. See [Setup Instructions](#-getting-started-running-locally) below.
 
 ## 🎯 The Problem
 
@@ -132,7 +132,10 @@ To use DocuPrism, you need a Chrome version with the Built-in AI APIs and the on
    - On older builds (138+) the Summarizer works out of the box and the chat needs `edge://flags` → **Prompt API for on-device language model** set to **Enabled**, then a restart
    - Model status and device performance class (must be High or greater): `edge://on-device-internals`
 
-4. **Download AI Model (if needed)**
+4. **Other Chromium browsers**
+   - Brave, Opera and Vivaldi expose `window.Summarizer` in some builds but do not ship the Gemini Nano component; creating a summarizer fails. DocuPrism checks the browser before trusting the API, shows **Model unavailable** in the masthead and disables Summarize.
+
+5. **Download AI Model (if needed)**
    - The first time you use the app, Chrome may need to download the Gemini Nano model
    - This happens automatically when you click "Summarize"
    - Model size: ~1.5GB (one-time download)

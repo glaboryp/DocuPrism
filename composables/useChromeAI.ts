@@ -1,6 +1,7 @@
 import { ref, readonly } from 'vue'
-import { AI_CONFIG } from '../config/constants'
+import { AI_CONFIG, ERROR_MESSAGES } from '../config/constants'
 import { AppError, ErrorCode, createAIError, logError } from '../utils/errorHandler'
+import { detectAIBrowser } from '../utils/browser'
 import { useSummaryCache } from './useSummaryCache'
 
 // Shared state (singleton pattern)
@@ -66,56 +67,62 @@ const createChromeAI = () => {
 
   // Chrome AI Methods according to official documentation
   const checkSupport = async (): Promise<boolean> => {
+    isSupported.value = false
+
     try {
       // Feature detection to check if browser supports Summarizer API
       if (typeof window === 'undefined' || !('Summarizer' in window)) {
-        error.value = 'Chrome Built-in AI Summarizer is not supported in this browser'
+        error.value = ERROR_MESSAGES.ai.notSupported
         return false
       }
 
-      // Check if we're offline - if so, assume supported (optimistic)
-      // Chrome Built-in AI works offline, so this is safe
-      if (!navigator.onLine) {
-        console.warn('Offline mode - AI API is local, marking as available')
-        isSupported.value = true
-        error.value = ''
-        return true
+      // Chromium-based browsers that keep the API surface but ship no model
+      // (Brave, Opera, Vivaldi) answer availability() and then fail in create().
+      if (detectAIBrowser() === 'unsupported') {
+        error.value = ERROR_MESSAGES.ai.notSupported
+        return false
       }
 
-      // Check model availability with timeout
+      // Check the model with a timeout. Never assume a model from a hung or
+      // failed check: that is how a browser without one gets labelled Ready.
+      let availabilityTimer: ReturnType<typeof setTimeout> | undefined
       const availabilityPromise = window.Summarizer!.availability({ outputLanguage: 'en' })
-      const timeoutPromise = new Promise<'available'>((resolve) => {
-        setTimeout(() => {
-          resolve('available')
-        }, AI_CONFIG.timeouts.checkSupport)
+      const timeoutPromise = new Promise<null>((resolve) => {
+        availabilityTimer = setTimeout(() => resolve(null), AI_CONFIG.timeouts.checkSupport)
       })
 
       const availability = await Promise.race([availabilityPromise, timeoutPromise])
-      
+      clearTimeout(availabilityTimer)
+
+      if (availability === null) {
+        error.value = ERROR_MESSAGES.ai.timeout
+        return false
+      }
+
       if (availability === 'unavailable') {
-        error.value = 'Summarizer API is not available on this device'
+        error.value = ERROR_MESSAGES.ai.notAvailable
         return false
       }
 
       if (availability === 'downloading') {
-        error.value = 'Summarizer model is currently downloading. Please wait...'
+        error.value = ERROR_MESSAGES.ai.downloading
         return false
       }
 
       if (availability === 'downloadable') {
-        error.value = 'Summarizer model needs to be downloaded. Click "Summarize" to start download.'
-        // We can still proceed - model will download when user interacts
-        isSupported.value = true
+        // Chrome downloads the model on the first user gesture
         error.value = ''
+        isSupported.value = true
         return true
       }
 
       if (availability === 'available') {
-        isSupported.value = true
         error.value = ''
+        isSupported.value = true
         return true
       }
 
+      error.value = ERROR_MESSAGES.ai.notAvailable
       return false
     } catch (err) {
       error.value = `Failed to check AI support: ${err instanceof Error ? err.message : 'Unknown error'}`
@@ -444,34 +451,11 @@ const createChromeAI = () => {
   const initialize = async (): Promise<void> => {
     isCheckingSupport.value = true
     try {
-      // Add timeout to prevent hanging
-      const checkPromise = checkSupport()
-      const timeoutPromise = new Promise<boolean>((resolve) => {
-        setTimeout(() => {
-          // If Summarizer API exists, assume it's available
-          if (typeof window !== 'undefined' && 'Summarizer' in window) {
-            isSupported.value = true
-            error.value = ''
-            resolve(true)
-          } else {
-            isSupported.value = false
-            error.value = 'Chrome Built-in AI not available'
-            resolve(false)
-          }
-        }, 10000) // Increased to 10 seconds
-      })
-
-      await Promise.race([checkPromise, timeoutPromise])
+      await checkSupport()
     } catch (err) {
-      console.error('Failed to initialize AI:', err)
-      // If API exists but check failed, assume it's available
-      if (typeof window !== 'undefined' && 'Summarizer' in window) {
-        isSupported.value = true
-        error.value = ''
-      } else {
-        isSupported.value = false
-        error.value = 'Chrome Built-in AI not available'
-      }
+      logError(err, { context: 'initializeAI' })
+      isSupported.value = false
+      error.value = ERROR_MESSAGES.ai.notSupported
     } finally {
       isCheckingSupport.value = false
     }
