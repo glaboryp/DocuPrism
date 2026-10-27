@@ -3,7 +3,7 @@
     <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
       <div class="lg:col-span-8">
         <h1 class="reveal font-read text-display">History</h1>
-        <p class="reveal reveal-1 mt-4 max-w-[46ch] text-ui text-ink-muted">
+        <p class="reveal reveal-1 mt-4 max-w-[46ch] text-ui text-ink">
           Readings saved in this browser. They stay here until you delete them.
         </p>
       </div>
@@ -30,7 +30,7 @@
 
       <div v-else-if="analyses.length === 0" class="sheet p-8 sm:p-12">
         <p class="font-read text-[24px] leading-tight">Nothing read yet.</p>
-        <p class="mt-3 max-w-[40ch] text-ui text-ink-muted">
+        <p class="mt-3 max-w-[40ch] text-ui text-ink">
           Every summary you save is kept here, in this browser. No account, no server,
           no copy anywhere else.
         </p>

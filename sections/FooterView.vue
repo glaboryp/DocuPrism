@@ -1,12 +1,12 @@
 <template>
   <footer class="frame mt-24 pb-10">
-    <div class="grid grid-cols-1 gap-10 sm:grid-cols-12">
+    <div class="reveal grid grid-cols-1 gap-10 sm:grid-cols-12">
       <div class="sm:col-span-7">
         <div class="flex items-center gap-3">
           <BrandMark class="h-8 w-8" />
           <span class="font-read text-[32px] leading-none tracking-[-0.02em]">DocuPrism</span>
         </div>
-        <p class="mt-4 max-w-[38ch] text-ui text-ink-muted">
+        <p class="mt-4 max-w-[38ch] text-ui text-ink">
           On-device document analysis. Nothing leaves this browser.
         </p>
       </div>

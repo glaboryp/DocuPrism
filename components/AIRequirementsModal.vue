@@ -31,14 +31,14 @@
         </button>
       </div>
 
-      <p class="mt-4 text-ui text-ink-muted">
+      <p class="mt-4 text-ui text-ink">
         DocuPrism uses the language model built into Chrome. There is no server to fall back to,
         so the browser has to bring its own.
       </p>
 
       <div v-if="browser === 'unsupported'" class="mt-8 space-y-3 text-ui">
         <p class="font-medium">Open this page in desktop Chrome or Edge.</p>
-        <p class="text-ink-muted">
+        <p class="text-ink">
           This browser does not include a built-in on-device model. Open DocuPrism in
           <strong class="text-ink">Chrome 148 or newer</strong>, or a recent
           <strong class="text-ink">Microsoft Edge</strong> on Windows or macOS.
@@ -47,11 +47,11 @@
 
       <div v-else-if="browser === 'edge'" class="mt-8 space-y-4 text-ui">
         <p class="font-medium">Microsoft Edge Stable, Windows or macOS</p>
-        <p class="text-ink-muted">
+        <p class="text-ink">
           No flags are needed. The Summarizer and the Prompt API are enabled by default.
           If the model is missing, Edge downloads it on first use.
         </p>
-        <p class="text-ink-muted">
+        <p class="text-ink">
           Check the model and the device performance class at
           <code class="bg-inset px-1 py-0.5">edge://on-device-internals</code>.
           The class must be <strong class="text-ink">High</strong> or greater.
@@ -60,11 +60,11 @@
 
       <div v-else class="mt-8 space-y-4 text-ui">
         <p class="font-medium">Chrome 148 or newer, on desktop</p>
-        <p class="text-ink-muted">
+        <p class="text-ink">
           No flags are needed. The Summarizer, Language Detector and Prompt APIs are enabled
           by default. If the model is missing, Chrome downloads it on first use.
         </p>
-        <p class="text-ink-muted">
+        <p class="text-ink">
           Check model status at
           <code class="bg-inset px-1 py-0.5">chrome://on-device-internals</code>.
         </p>

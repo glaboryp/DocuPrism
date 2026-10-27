@@ -2,21 +2,21 @@
 name: DocuPrism
 description: On-device document analysis on a reading desk of paper and ink.
 colors:
-  ground: "#EFEEE8"
-  sheet: "#F8F7F2"
-  inset: "#E7E5DD"
-  ink: "#171612"
-  ink-muted: "#5C584E"
-  rule: "#D5D2C7"
+  ground: "#EFEFEB"
+  sheet: "#F8F8F4"
+  inset: "#E7E7E1"
+  ink: "#171614"
+  ink-muted: "#5B5B55"
+  rule: "#D6D6CF"
   accent: "#1B3FD8"
   danger: "#A3231C"
   success: "#1F6B3A"
-  ground-dark: "#141311"
-  sheet-dark: "#1C1B18"
-  inset-dark: "#25241F"
-  ink-dark: "#EDEAE1"
-  ink-muted-dark: "#A8A294"
-  rule-dark: "#34322C"
+  ground-dark: "#141413"
+  sheet-dark: "#1C1C19"
+  inset-dark: "#252521"
+  ink-dark: "#EDECE7"
+  ink-muted-dark: "#A8A8A0"
+  rule-dark: "#34342E"
   accent-dark: "#93A9FF"
   danger-dark: "#F08A80"
   success-dark: "#7FC79B"
@@ -70,7 +70,7 @@ components:
     padding: "0 20px"
     height: "44px"
   button-primary-hover:
-    backgroundColor: "#2A2823"
+    backgroundColor: "#2E2C27"
     textColor: "{colors.sheet}"
     rounded: "{rounded.none}"
     padding: "0 20px"
@@ -119,14 +119,14 @@ A two-temperature neutral desk with a single ink-blue signal. Warmth comes from 
 - **Prism Ink** (#1B3FD8): focus rings, the generated-content mark, the loading beam, the storage meter. It never fills a large surface and never sets running text.
 
 ### Neutral
-- **Archival Paper** (#EFEEE8): the page ground in light mode.
-- **Sheet** (#F8F7F2): document and reading pages; one tone step above the ground, no border.
-- **Inset** (#E7E5DD): fields, hovers and zones sunk into a page.
-- **Press Ink** (#171612): all running text, headings and the primary action in light mode.
-- **Pencil** (#5C584E): metadata, captions, placeholders and secondary prose.
-- **Rule** (#D5D2C7): functional lines only — form fields, list separators, real tables.
+- **Archival Paper** (#EFEFEB): the page ground in light mode, a neutral stone rather than a yellow cream.
+- **Sheet** (#F8F8F4): document and reading pages; one tone step above the ground, no border.
+- **Inset** (#E7E7E1): fields, hovers and zones sunk into a page.
+- **Press Ink** (#171614): all running text, headings and the primary action in light mode.
+- **Pencil** (#5B5B55): metadata, captions, placeholders and secondary prose.
+- **Rule** (#D6D6CF): functional lines only — form fields, list separators, real tables.
 
-Dark mode inverts the same roles: ground #141311, sheet #1C1B18, ink #EDEAE1, muted #A8A294, accent #93A9FF. The metaphor is a desk lamp at night, not a neon product.
+Dark mode inverts the same roles: ground #141413, sheet #1C1C19, ink #EDECE7, muted #A8A8A0, accent #93A9FF. The metaphor is a desk lamp at night, not a neon product.
 
 **The One Signal Rule.** Blue marks the machine's output and the current focus, nothing else. If a screen needs a second colour to explain itself, the composition is wrong.
 

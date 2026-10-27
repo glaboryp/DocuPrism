@@ -31,7 +31,7 @@
         </button>
       </div>
 
-      <p id="sensitive-dialog-description" class="mt-4 text-ui text-ink-muted">
+      <p id="sensitive-dialog-description" class="mt-4 text-ui text-ink">
         This document contains things you may not want written to the history in this browser.
         The summary stays on screen either way.
       </p>

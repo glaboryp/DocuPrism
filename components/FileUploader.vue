@@ -10,7 +10,7 @@
       <p class="font-read text-[24px] leading-tight">
         {{ isDragging ? 'Drop the file here.' : 'Open a document from this device.' }}
       </p>
-      <p class="mt-3 max-w-[46ch] text-ui text-ink-muted">
+      <p class="mt-3 max-w-[46ch] text-ui text-ink">
         TXT, MD, PDF or DOCX, up to {{ maxSizeMB }} MB. The file is read here; it is never uploaded.
       </p>
     </div>

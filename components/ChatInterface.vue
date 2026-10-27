@@ -3,7 +3,7 @@
     <!-- Prompt API unavailable -->
     <div v-if="!isPromptApiAvailable" class="flex-1 p-6 sm:p-8">
       <p class="font-read text-[24px] leading-tight">Chat is not available here.</p>
-      <p class="mt-3 max-w-[40ch] text-ui text-ink-muted">
+      <p class="mt-3 max-w-[40ch] text-ui text-ink">
         The chat needs Chrome's Prompt API. Summaries may still work in this browser.
       </p>
 
@@ -58,7 +58,7 @@
       <div ref="chatContainer" class="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5 sm:px-8">
         <div v-if="chatHistory.length === 0 && !streamingMessage" class="flex h-full flex-col justify-center">
           <p class="font-read text-[24px] leading-tight">Ask about this document.</p>
-          <p class="mt-3 max-w-[38ch] text-ui text-ink-muted">
+          <p class="mt-3 max-w-[38ch] text-ui text-ink">
             Questions use the text in the document pane. If the document changes, the chat starts again.
           </p>
           <div class="mt-6 flex flex-col items-start gap-1">

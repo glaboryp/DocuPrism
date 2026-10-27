@@ -5,7 +5,7 @@
         <h1 class="reveal font-read text-display lg:col-span-8">
           What does this document say?
         </h1>
-        <p class="reveal reveal-1 max-w-[38ch] text-ui text-ink-muted lg:col-span-4 lg:justify-self-end lg:pb-1">
+        <p class="reveal reveal-1 max-w-[38ch] text-ui text-ink lg:col-span-4 lg:justify-self-end lg:pb-1">
           Paste a document, or open one. The summary and the chat run in Chrome, on this device — nothing is uploaded.
         </p>
       </div>
@@ -45,7 +45,7 @@
             </div>
           </div>
 
-          <div class="sheet">
+          <div class="sheet lg:min-h-[420px]">
             <div
               v-if="inputMode === 'text'"
               id="text-input-panel"
@@ -102,7 +102,7 @@
             {{ describeQualityIssues(documentQuality.issues) }}
           </div>
 
-          <fieldset class="mt-8">
+          <fieldset class="mt-6">
             <legend class="sr-only">Summary options</legend>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
@@ -162,10 +162,7 @@
             </div>
           </fieldset>
 
-          <div class="mt-6 flex flex-col-reverse items-stretch justify-between gap-3 sm:flex-row sm:items-center">
-            <p class="meta">
-              Runs on this device · Gemini Nano
-            </p>
+          <div class="mt-5 flex justify-end">
             <button
               type="button"
               class="btn btn-primary w-full sm:w-auto"
@@ -181,6 +178,7 @@
 
         <!-- Reading page -->
         <section
+          ref="readingSection"
           class="reveal reveal-3 lg:col-span-5"
           aria-labelledby="reading-heading"
         >
@@ -205,14 +203,15 @@
                 class="tab"
                 :aria-selected="outputMode === 'chat'"
                 aria-controls="chat-panel"
-                @click="outputMode = 'chat'"
+                @click="outputMode = 'chat'; scrollToReading()"
               >
                 Chat
               </button>
             </div>
           </div>
 
-          <div class="sheet relative flex min-h-[440px] flex-col lg:min-h-[520px]">
+          <div class="sheet relative flex min-h-[440px] flex-col lg:min-h-[420px]">
+            <div v-if="isLoading" class="beam" aria-hidden="true" />
             <div
               v-if="outputMode === 'summary'"
               id="summary-panel"
@@ -256,11 +255,15 @@
                   <div
                     v-if="summaryOptions.format === 'markdown'"
                     class="reading is-fresh"
+                    role="article"
+                    aria-label="Generated summary"
                     v-html="formattedSummary"
                   />
                   <pre
                     v-else
                     class="reading is-fresh whitespace-pre-wrap font-read"
+                    role="article"
+                    aria-label="Generated summary"
                   >{{ summary }}</pre>
                 </div>
 
@@ -292,7 +295,7 @@
                 <p class="font-read text-[24px] leading-tight">
                   {{ hasDocument ? 'Ready when you are.' : 'No reading yet.' }}
                 </p>
-                <p class="mt-3 max-w-[38ch] text-ui text-ink-muted">
+                <p class="mt-3 max-w-[38ch] text-ui text-ink">
                   {{ hasDocument
                     ? 'Choose a type and press Summarize. The reading appears here and never leaves this device.'
                     : 'Paste a document or open a file. The summary is written here by Chrome on this device.' }}
@@ -356,7 +359,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, onUnmounted, nextTick, defineAsyncComponent } from 'vue'
 import { useChromeAI } from '../composables/useChromeAI'
 import { useOfflineStorage } from '../composables/useOfflineStorage'
 import { useToast } from '../composables/useToast'
@@ -392,6 +395,7 @@ const summaryOptions = ref<SummaryOptions>({
   length: 'medium'
 })
 const showOriginal = ref(false)
+const readingSection = ref<HTMLElement | null>(null)
 
 const qualityCheck = ref<{ text: string, quality: DocumentQuality } | null>(null)
 const documentQuality = computed(() => {
@@ -490,8 +494,18 @@ const cancelSave = () => {
   toast.info('Summary kept on screen, not saved to history')
 }
 
+const scrollToReading = () => {
+  if (typeof window === 'undefined' || window.innerWidth >= 1024) return
+  nextTick(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    readingSection.value?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+  })
+}
+
 const handleSummarize = async () => {
   if (!canSummarize.value) return
+
+  scrollToReading()
 
   const cacheStatsBefore = getCacheStats()
   const hadCacheBefore = cacheStatsBefore.size

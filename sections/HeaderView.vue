@@ -3,7 +3,7 @@
     <div class="frame flex h-[72px] items-center justify-between gap-6">
       <NuxtLink
         to="/"
-        class="flex items-center gap-2.5 text-ink"
+        class="reveal flex items-center gap-2.5 text-ink"
         aria-label="DocuPrism home"
       >
         <BrandMark class="h-6 w-6" />

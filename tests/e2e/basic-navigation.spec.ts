@@ -11,14 +11,19 @@ test.describe('Basic Navigation', () => {
     // Verify we're on the home page
     await expect(page).toHaveURL('/')
     
-    // Check for main heading
-    await expect(page.getByRole('heading', { name: /DocuPrism/i })).toBeVisible()
+    // The screen names the product and asks the question it answers
+    await expect(page.getByRole('link', { name: /DocuPrism home/i }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: /what does this document say/i })).toBeVisible()
   })
 
   test('should have textarea for input', async ({ page }) => {
     // Check for document textarea
     const textarea = page.locator('textarea')
     await expect(textarea).toBeVisible()
+
+    // The reading page and its primary action are part of the first screen
+    await expect(page.getByRole('heading', { name: /reading/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /summarize document/i })).toBeVisible()
   })
 
   test('should navigate to history page', async ({ page }) => {

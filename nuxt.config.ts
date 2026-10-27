@@ -113,8 +113,8 @@ export default defineNuxtConfig({
       name: 'DocuPrism - Document Analysis',
       short_name: 'DocuPrism',
       description: 'Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI',
-      theme_color: '#efeee8',
-      background_color: '#efeee8',
+      theme_color: '#efefeb',
+      background_color: '#efefeb',
       display: 'standalone',
       orientation: 'any',
       scope: '/',
@@ -200,7 +200,7 @@ export default defineNuxtConfig({
           name: 'description', 
           content: 'Privacy-first, offline-capable PWA for on-device document analysis using Chrome Built-in AI' 
         },
-        { name: 'theme-color', content: '#efeee8' },
+        { name: 'theme-color', content: '#efefeb' },
         { name: 'color-scheme', content: 'light dark' }
       ],
       link: [
