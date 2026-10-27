@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Resolved unmet peer dependencies (`@vitejs/plugin-vue` 6, `workbox-build`/`workbox-window`
+  7.4.1) and removed the stale `vite.server.hmr` config.
+- **Brave-browser fix**: Chrome's Summarizer API is exposed but Gemini Nano is not shipped; the app no longer reports *On-device · Ready* and disables Summarize for Brave, Opera, Vivaldi and other Chromium builds without the model.
+- **Requirements on load**: When the browser cannot run the model, the Requirements sheet now opens automatically on page arrival.
+
 ### Security
 - Updated dependencies, including major upgrades (Nuxt 4.5.2, Vue Router 5.3.1, ESLint 10,
   Vitest 5, jsdom 30, TypeScript 6.0, marked 18, pdfjs-dist 6.3), bringing `pnpm audit`
@@ -15,10 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - Unused `happy-dom` dev dependency.
-
-### Fixed
-- Resolved unmet peer dependencies (`@vitejs/plugin-vue` 6, `workbox-build`/`workbox-window`
-  7.4.1) and removed the stale `vite.server.hmr` config.
 
 ## [1.2.0] - 2025-10-24
 
