@@ -19,11 +19,18 @@ describe('useChromePrompt', () => {
       writable: true,
       configurable: true
     })
+
+    Object.defineProperty(navigator, 'userAgentData', {
+      value: { brands: [{ brand: 'Chromium' }, { brand: 'Google Chrome' }] },
+      configurable: true
+    })
   })
 
   afterEach(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).LanguageModel
+    delete (navigator as unknown as { userAgentData?: unknown }).userAgentData
+    delete (navigator as unknown as { brave?: unknown }).brave
     vi.clearAllMocks()
   })
 
@@ -51,6 +58,16 @@ describe('useChromePrompt', () => {
 
     await expect(prompt.checkSupport()).resolves.toBe(false)
     expect(prompt.error.value).toBe('Prompt API not available on this device')
+  })
+
+  it('reports no support in Brave, which has no on-device model', async () => {
+    Object.defineProperty(navigator, 'brave', {
+      value: { isBrave: async () => true },
+      configurable: true
+    })
+    const prompt = useChromePrompt()
+
+    await expect(prompt.checkSupport()).resolves.toBe(false)
   })
 
   it('skips the document context for small talk but keeps it for real questions', async () => {

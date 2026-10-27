@@ -1,5 +1,6 @@
 import { ref, readonly } from 'vue'
 import { createAIError, logError } from '../utils/errorHandler'
+import { detectAIBrowser } from '../utils/browser'
 import { needsDocumentContext } from '../utils/semanticChecks'
 import type { AILanguageModel, AISamplingMode } from '../types/chrome-ai'
 
@@ -33,6 +34,12 @@ export const useChromePrompt = () => {
 
       if (!LanguageModelAPI) {
         error.value = 'Prompt API not available'
+        return false
+      }
+
+      // Browsers that keep the API but ship no model (Brave, Opera, Vivaldi)
+      if (detectAIBrowser() === 'unsupported') {
+        error.value = 'Prompt API not available in this browser'
         return false
       }
 
