@@ -3,6 +3,7 @@ import { AI_CONFIG, ERROR_MESSAGES } from '../config/constants'
 import { AppError, ErrorCode, createAIError, logError } from '../utils/errorHandler'
 import { detectAIBrowser } from '../utils/browser'
 import { useSummaryCache } from './useSummaryCache'
+import { useI18n } from './useI18n'
 
 // Shared state (singleton pattern)
 let sharedInstance: ReturnType<typeof createChromeAI> | null = null
@@ -298,6 +299,7 @@ const createChromeAI = () => {
 
   // Initialize cache
   const { getCached, setCached, clearCache, getCacheStats } = useSummaryCache()
+  const { t } = useI18n()
 
   let summarizeController: AbortController | null = null
 
@@ -308,7 +310,7 @@ const createChromeAI = () => {
   // AI Methods using official API
   const summarizeText = async (text: string, options: SummaryOptions): Promise<string> => {
     if (!text.trim()) {
-      throw new Error('Please provide text to summarize')
+      throw new Error(t('errors.emptyText'))
     }
 
     // Check cache first
@@ -331,12 +333,12 @@ const createChromeAI = () => {
 
     try {
       if (!window.Summarizer) {
-        throw new Error('Summarizer API is not available')
+        throw new Error(t('errors.summarizerUnavailable'))
       }
 
       // Verify user activation (required for downloads)
       if (!navigator.userActivation?.isActive) {
-        throw new Error('User interaction required to use Summarizer API')
+        throw new Error(t('errors.userActivationRequired'))
       }
 
       // Detect the language of the input text
@@ -424,7 +426,7 @@ const createChromeAI = () => {
       }
 
       if (!result.trim()) {
-        throw new Error('No summary was generated')
+        throw new Error(t('errors.noSummaryGenerated'))
       }
       
       // Cache the result for future use
@@ -434,7 +436,7 @@ const createChromeAI = () => {
     } catch (err) {
       if (!(err instanceof AppError && err.code === ErrorCode.AI_CANCELLED)) {
         logError(err, { textLength: text.length, options })
-        error.value = err instanceof Error ? err.message : 'Failed to summarize text'
+        error.value = err instanceof Error ? err.message : t('errors.summarizeFailed')
       }
       throw err
     } finally {

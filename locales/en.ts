@@ -280,6 +280,13 @@ export const en = {
     readFailed: 'Could not read file “{filename}”. {error}',
     emptyFile: 'File appears to be empty.',
   },
+  errors: {
+    emptyText: 'Please provide text to summarize',
+    summarizerUnavailable: 'Summarizer API is not available',
+    userActivationRequired: 'User interaction required to use Summarizer API',
+    noSummaryGenerated: 'No summary was generated',
+    summarizeFailed: 'Failed to summarize text',
+  },
   validators: {
     fileTooLarge: 'File size ({size} MB) exceeds maximum allowed size of {max} MB',
     unsupportedType: 'Unsupported file type. Allowed formats: {formats}',

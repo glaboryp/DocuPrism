@@ -282,6 +282,13 @@ export const es: TranslationSchema = {
     readFailed: 'No se pudo leer el archivo «{filename}». {error}',
     emptyFile: 'El archivo parece estar vacío.',
   },
+  errors: {
+    emptyText: 'Introduce texto para resumir',
+    summarizerUnavailable: 'La API Summarizer no está disponible',
+    userActivationRequired: 'Se requiere interacción del usuario para usar la API Summarizer',
+    noSummaryGenerated: 'No se generó ningún resumen',
+    summarizeFailed: 'No se pudo resumir el texto',
+  },
   validators: {
     fileTooLarge: 'El tamaño del archivo ({size} MB) supera el máximo permitido de {max} MB',
     unsupportedType: 'Tipo de archivo no compatible. Formatos permitidos: {formats}',
