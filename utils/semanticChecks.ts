@@ -87,17 +87,17 @@ export function analyzeDocumentQuality(text: string): DocumentQuality {
  * Human-readable explanation of a quality check, used by the UI banner and the
  * toast shown before summarizing.
  */
-export function describeQualityIssues(issues: DocumentIssue[]): string {
+export function describeQualityIssues(issues: DocumentIssue[], t?: (key: string) => string): string {
   if (issues.includes('garbled-characters')) {
-    return 'The text contains garbled characters. This usually means the PDF or scan could not be extracted as text.'
+    return t ? t('quality.garbled') : 'The text contains garbled characters. This usually means the PDF or scan could not be extracted as text.'
   }
   if (issues.includes('low-prose-ratio')) {
-    return 'This looks like code, a table dump or a broken extraction rather than prose, so a summary may not be meaningful.'
+    return t ? t('quality.lowProse') : 'This looks like code, a table dump or a broken extraction rather than prose, so a summary may not be meaningful.'
   }
   if (issues.includes('repetitive-text')) {
-    return 'The text repeats itself a lot. It may be placeholder or corrupted content.'
+    return t ? t('quality.repetitive') : 'The text repeats itself a lot. It may be placeholder or corrupted content.'
   }
-  return 'The text is very short, so there is not much for the summary to work with.'
+  return t ? t('quality.tooShort') : 'The text is very short, so there is not much for the summary to work with.'
 }
 
 export type SensitiveKind =

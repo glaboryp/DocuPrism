@@ -5,14 +5,14 @@
       class="fixed inset-0 z-[100] bg-ground lg:hidden"
       role="dialog"
       aria-modal="true"
-      aria-label="Menu"
+      :aria-label="t('menu.ariaLabel')"
       @keydown.esc="closeMenu"
     >
       <div class="frame flex h-[72px] items-center justify-between">
         <NuxtLink
           to="/"
           class="flex items-center gap-2.5 text-ink"
-          aria-label="DocuPrism home"
+          :aria-label="t('header.homeAria')"
           @click="closeMenu"
         >
           <BrandMark class="h-6 w-6" />
@@ -22,27 +22,27 @@
           ref="closeButton"
           type="button"
           class="inline-flex h-11 w-11 items-center justify-center text-ink transition-colors hover:bg-inset"
-          aria-label="Close menu"
+          :aria-label="t('menu.closeAria')"
           @click="closeMenu"
         >
           <Icon name="heroicons:x-mark" class="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
 
-      <nav class="frame mt-6" aria-label="Menu">
+      <nav class="frame mt-6" :aria-label="t('menu.ariaLabel')">
         <NuxtLink
           to="/"
           class="flex items-baseline justify-between border-t border-rule py-5 font-read text-[28px] leading-none"
           @click="closeMenu"
         >
-          Read a document
+          {{ t('menu.readDocument') }}
         </NuxtLink>
         <NuxtLink
           to="/history"
           class="flex items-baseline justify-between border-t border-rule py-5 font-read text-[28px] leading-none"
           @click="closeMenu"
         >
-          History
+          {{ t('menu.history') }}
         </NuxtLink>
         <a
           href="https://github.com/glaboryp/DocuPrism"
@@ -51,13 +51,19 @@
           class="flex items-baseline justify-between border-y border-rule py-5 font-read text-[28px] leading-none"
           @click="closeMenu"
         >
-          GitHub
+          {{ t('menu.github') }}
         </a>
       </nav>
 
-      <div class="frame mt-10 flex items-center justify-between">
-        <span class="text-ui">{{ isDark ? 'Light mode' : 'Dark mode' }}</span>
-        <ThemeToggle />
+      <div class="frame mt-10 space-y-4">
+        <div class="flex items-center justify-between border-b border-rule pb-4">
+          <span class="text-ui">{{ t('language.selectLanguage') }}</span>
+          <LanguageToggle />
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-ui">{{ isDark ? t('theme.lightMode') : t('theme.darkMode') }}</span>
+          <ThemeToggle />
+        </div>
       </div>
 
       <p class="frame meta mt-6">{{ statusLabel }}</p>
@@ -70,8 +76,10 @@ import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from '../composables/useTheme'
 import { useChromeAI } from '../composables/useChromeAI'
+import { useI18n } from '../composables/useI18n'
 import BrandMark from './BrandMark.vue'
 import ThemeToggle from './ThemeToggle.vue'
+import LanguageToggle from './LanguageToggle.vue'
 
 interface Props {
   isOpen: boolean
@@ -83,14 +91,15 @@ const emit = defineEmits(['close'])
 const route = useRoute()
 const { isDark } = useTheme()
 const { isSupported, isCheckingSupport } = useChromeAI()
+const { t } = useI18n()
 
 const closeButton = ref<HTMLButtonElement | null>(null)
 
 const statusLabel = computed(() => {
-  if (isCheckingSupport.value) return 'Checking the on-device model…'
+  if (isCheckingSupport.value) return t('menu.statusChecking')
   return isSupported.value
-    ? 'On-device model ready · Nothing is uploaded'
-    : 'On-device model unavailable in this browser'
+    ? t('menu.statusReady')
+    : t('menu.statusUnavailable')
 })
 
 const closeMenu = () => {

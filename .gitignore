@@ -42,4 +42,5 @@ playwright/.cache/
 
 .agents
 .claude
+.qoder/
 skills-lock.json

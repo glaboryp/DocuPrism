@@ -7,13 +7,13 @@
           <span class="font-read text-[32px] leading-none tracking-[-0.02em]">DocuPrism</span>
         </div>
         <p class="mt-4 max-w-[38ch] text-ui text-ink">
-          On-device document analysis. Nothing leaves this browser.
+          {{ t('footer.tagline') }}
         </p>
       </div>
 
       <div class="flex flex-col gap-2 text-ui sm:col-span-5 sm:items-end">
         <NuxtLink to="/history" class="text-ink transition-colors hover:text-ink-muted">
-          History
+          {{ t('common.history') }}
         </NuxtLink>
         <a
           href="https://github.com/glaboryp/DocuPrism"
@@ -21,11 +21,11 @@
           rel="noopener noreferrer"
           class="text-ink transition-colors hover:text-ink-muted"
         >
-          Source on GitHub
+          {{ t('common.sourceOnGithub') }}
         </a>
         <p class="meta mt-2 text-left sm:text-right">
-          Chrome Built-in AI Challenge 2025<br>
-          Version 1.2.0
+          {{ t('footer.challenge') }}<br>
+          {{ t('footer.version', { version: '1.2.0' }) }}
         </p>
       </div>
     </div>
@@ -34,4 +34,7 @@
 
 <script setup lang="ts">
 import BrandMark from '../components/BrandMark.vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 </script>

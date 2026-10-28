@@ -52,8 +52,11 @@ test.describe('Basic Navigation', () => {
     // Go to history
     await page.click('a[href="/history"]')
     await expect(page).toHaveURL('/history')
-    
-    // Navigate back to home
+
+    // The requirements modal may re-open on the history page in test browsers
+    await closeRequirements(page)
+
+    // Navigate back to home via the logo link
     await page.click('a[href="/"]')
     await expect(page).toHaveURL('/')
   })

@@ -9,7 +9,7 @@
     >
       <div class="frame flex items-center justify-between gap-4 py-3">
         <p class="text-ui">
-          Working offline. Readings and history stay on this device.
+          {{ t('pwa.offlineNotice') }}
         </p>
       </div>
     </div>
@@ -22,13 +22,13 @@
       aria-live="polite"
     >
       <div class="frame flex flex-wrap items-center justify-between gap-3 py-3">
-        <p class="text-ui">A new version of DocuPrism is ready.</p>
+        <p class="text-ui">{{ t('pwa.updateNotice') }}</p>
         <button
           type="button"
           class="h-10 bg-sheet px-4 text-ui font-medium text-ink"
           @click="refreshApp"
         >
-          Refresh
+          {{ t('pwa.refresh') }}
         </button>
       </div>
     </div>
@@ -40,9 +40,9 @@
     >
       <div class="frame flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="text-ui font-medium">Install DocuPrism</p>
+          <p class="text-ui font-medium">{{ t('pwa.installTitle') }}</p>
           <p class="text-meta opacity-80">
-            Opens like an app and keeps working without a connection.
+            {{ t('pwa.installDesc') }}
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -51,14 +51,14 @@
             class="h-10 bg-sheet px-4 text-ui font-medium text-ink"
             @click="installPWA"
           >
-            Install
+            {{ t('pwa.install') }}
           </button>
           <button
             type="button"
             class="h-10 px-3 text-ui text-sheet opacity-80 transition-opacity hover:opacity-100"
             @click="dismissInstallPrompt"
           >
-            Not now
+            {{ t('pwa.notNow') }}
           </button>
         </div>
       </div>
@@ -68,6 +68,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
